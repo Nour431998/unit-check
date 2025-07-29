@@ -2,10 +2,12 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver1.3</title>
+  <title>AMWAJ 2025 Ver1.4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -126,81 +128,118 @@
 </head>
 <body>
 
-<div class="container">
-  <div class="logo-bar">
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+<div id="auth-container" class="container">
+  <h2>تسجيل الدخول</h2>
+  <input type="email" id="email" placeholder="البريد الإلكتروني" style="width:100%; padding:10px; margin-bottom:10px;">
+  <input type="password" id="password" placeholder="كلمة المرور" style="width:100%; padding:10px; margin-bottom:10px;">
+  <button onclick="login()">دخول</button>
+  <p id="auth-error" style="color: red;"></p>
+</div>
+
+<div id="main-container" style="display: none;">
+  <div class="container">
+    <div class="logo-bar">
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+    </div>
+
+    <h2>MAINTENANCE DIFFERENCE 2025</h2>
+    <h3 id="sheetTitle"><span id="loading">تحميل البيانات</span></h3>
+
+    <div id="selectContainer">
+      <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
+    </div>
+
+    <div class="result" id="resultContainer"></div>
+    <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
   </div>
-
-  <h2>MAINTENANCE DIFFERENCE 2025</h2>
-  <h3 id="sheetTitle"><span id="loading">تحميل البيانات</span></h3>
-
-  <div id="selectContainer">
-    <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
-  </div>
-
-  <div class="result" id="resultContainer"></div>
-  <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
 </div>
 
 <script>
-  const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuVRP-Ye2EYqjTZStBRy-Ru0cdPvJ1hnQ",
+    authDomain: "amwaj-2025.firebaseapp.com",
+    projectId: "amwaj-2025",
+    storageBucket: "amwaj-2025.appspot.com",
+    messagingSenderId: "738364256568",
+    appId: "1:738364256568:web:e6a4201c1ac7db5d61bdde"
+  };
 
-  fetch(jsonUrl)
-    .then(res => res.json())
-    .then(json => {
-      document.getElementById("sheetTitle").textContent = json.title;
-      const rows = json.data;
-      const unitKey = "Unit";
+  firebase.initializeApp(firebaseConfig);
 
-      const unitSelect = document.getElementById("unitSelect");
-      const resultContainer = document.getElementById("resultContainer");
-      const resetBtn = document.getElementById("resetBtn");
-      const selectContainer = document.getElementById("selectContainer");
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(() => {
+        document.getElementById("auth-container").style.display = "none";
+        document.getElementById("main-container").style.display = "block";
+        loadData();
+      })
+      .catch(error => {
+        document.getElementById("auth-error").textContent = "فشل تسجيل الدخول: " + error.message;
+      });
+  }
 
-      const ts = new TomSelect(unitSelect, {
-        placeholder: 'اختر رقم الوحدة...',
-        options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-        onChange: (value) => {
-          resultContainer.innerHTML = "";
-          const matchedRow = rows.find(row => row[unitKey] === value);
-          if (matchedRow) {
-            const unitP = document.createElement("p");
-            unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
-            unitP.className = "unit-number";
-            resultContainer.appendChild(unitP);
+  function loadData() {
+    const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
 
-            const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-            displayKeys.forEach(key => {
+    fetch(jsonUrl)
+      .then(res => res.json())
+      .then(json => {
+        document.getElementById("sheetTitle").textContent = json.title;
+        const rows = json.data;
+        const unitKey = "Unit";
+
+        const unitSelect = document.getElementById("unitSelect");
+        const resultContainer = document.getElementById("resultContainer");
+        const resetBtn = document.getElementById("resetBtn");
+        const selectContainer = document.getElementById("selectContainer");
+
+        const ts = new TomSelect(unitSelect, {
+          placeholder: 'اختر رقم الوحدة...',
+          options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
+          onChange: (value) => {
+            resultContainer.innerHTML = "";
+            const matchedRow = rows.find(row => row[unitKey] === value);
+            if (matchedRow) {
+              const unitP = document.createElement("p");
+              unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
+              unitP.className = "unit-number";
+              resultContainer.appendChild(unitP);
+
+              const displayKeys = ["status", "2023", "2024", "ملاحظات"];
+              displayKeys.forEach(key => {
+                const p = document.createElement("p");
+                p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
+                resultContainer.appendChild(p);
+              });
+
+              ts.disable();
+              selectContainer.style.display = "none";
+              resetBtn.style.display = "inline-block";
+            } else {
               const p = document.createElement("p");
-              p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
+              p.textContent = "لم يتم العثور على البيانات.";
+              p.className = "no-data";
               resultContainer.appendChild(p);
-            });
-
-            ts.disable();
-            selectContainer.style.display = "none";
-            resetBtn.style.display = "inline-block";
-          } else {
-            const p = document.createElement("p");
-            p.textContent = "لم يتم العثور على البيانات.";
-            p.className = "no-data";
-            resultContainer.appendChild(p);
+            }
           }
-        }
-      });
+        });
 
-      resetBtn.addEventListener("click", () => {
-        ts.clear();
-        ts.enable();
-        selectContainer.style.display = "block";
-        resultContainer.innerHTML = "";
-        resetBtn.style.display = "none";
+        resetBtn.addEventListener("click", () => {
+          ts.clear();
+          ts.enable();
+          selectContainer.style.display = "block";
+          resultContainer.innerHTML = "";
+          resetBtn.style.display = "none";
+        });
+      })
+      .catch(error => {
+        document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات";
+        console.error("Error fetching data:", error);
       });
-    })
-    .catch(error => {
-      document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات";
-      console.error("Error fetching data:", error);
-    });
+  }
 </script>
 
 </body>
