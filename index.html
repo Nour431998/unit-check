@@ -1,135 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Amwaj 2025 Ver0.7</title>
+  <title>AMWAJ 2025 Ver0.3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tom Select -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
       margin: 0;
       padding: 0;
+      direction: rtl;
     }
 
     .container {
-      max-width: 800px;
-      margin: 30px auto;
-      background-color: #fff;
+      max-width: 600px;
+      margin: 5vh auto;
+      background: white;
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
+      position: relative;
     }
 
     .logo-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
-      gap: 10px;
-      flex-wrap: nowrap;
+      padding: 10px 20px;
+      background-color: white;
     }
 
-    .logo-bar img {
-      height: 90px;
-      width: auto;
-      max-width: 48%;
-      object-fit: contain;
+    .logo-bar img:first-child {
+      max-height: 50px;
     }
 
-    h2, h3 {
-      text-align: center;
-      margin: 15px 0;
+    .logo-bar img:last-child {
+      max-height: 65px;
     }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-top: 20px;
-      margin-bottom: 20px;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    #result {
-      font-size: 20px;
-      text-align: center;
-      margin-top: 20px;
-      font-weight: bold;
+    h2 {
       color: #333;
+      margin-top: 20px;
+      margin-bottom: 10px;
     }
 
-    #loading {
-      font-style: italic;
+    h3 {
+      color: #555;
       font-size: 16px;
-      color: #777;
+      margin-bottom: 20px;
+      font-weight: normal;
+    }
+
+    select, .ts-wrapper {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .ts-wrapper {
+      background-color: #fdfcf8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .result p {
+      background: #e9f5e9;
+      color: #2c3e50;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .no-data {
+      background: #fdecea;
+      color: #c0392b;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 2vh 10px;
+        padding: 20px;
+      }
+
+      .logo-bar {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    @keyframes loadingDots {
+      0%   { content: '⏳ تحميل البيانات'; }
+      33%  { content: '⏳ تحميل البيانات.'; }
+      66%  { content: '⏳ تحميل البيانات..'; }
+      100% { content: '⏳ تحميل البيانات...'; }
+    }
+
+    #loading::after {
+      content: '';
+      animation: loadingDots 1.5s infinite steps(4, end);
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="logo-bar">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Logo Right">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Logo Left">
-    </div>
+<div class="logo-bar">
+  <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
+  <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+</div>
 
-    <h2>AMWAJ MAINTENANCE DIFFERENCE 2025</h2>
-    <h3 id="sheetTitle"><span id="loading">⏳ تحميل البيانات...</span></h3>
+<div class="container">
+  <h2>AMWAJ MAINTENANCE DIFFERENCE 2025</h2>
+  <h3 id="sheetTitle"><span id="loading">⏳ تحميل البيانات</span></h3>
 
-    <input type="text" id="searchInput" placeholder="ادخل رقم الوحدة للبحث">
-    <div id="result"></div>
-  </div>
+  <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
 
-  <script>
-    const sheetURL = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
+  <div class="result" id="resultContainer"></div>
 
-    let data = [];
+  <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
+</div>
 
-    async function fetchData() {
-      try {
-        const response = await fetch(sheetURL);
-        const json = await response.json();
-        data = json.data || json;
-        document.getElementById("loading").textContent = "";
-        document.getElementById("sheetTitle").textContent = "برجاء إدخال رقم الوحدة للتحقق من الفروق";
-      } catch (error) {
-        document.getElementById("loading").textContent = "⚠️ حدث خطأ أثناء تحميل البيانات";
-        console.error("Fetch error:", error);
-      }
-    }
+<script>
+  const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
 
-    function searchUnit() {
-      const input = document.getElementById("searchInput").value.trim();
-      const result = document.getElementById("result");
+  fetch(jsonUrl)
+    .then(res => res.json())
+    .then(json => {
+      document.getElementById("sheetTitle").textContent = json.title;
 
-      if (input === "") {
-        result.textContent = "";
-        return;
-      }
+      const rows = json.data;
+      const headers = Object.keys(rows[0]);
+      const unitKey = "Unit";
 
-      const match = data.find(row => row.Unit === input);
+      const unitSelect = document.getElementById("unitSelect");
+      const resultContainer = document.getElementById("resultContainer");
+      const resetBtn = document.getElementById("resetBtn");
 
-      if (match) {
-        const status2024 = match["2024"];
-        if (status2024 === "خالص") {
-          result.textContent = "تم السداد";
-        } else if (status2024 === "جدوله") {
-          result.textContent = "برجاء ابلاغ العميل بفروق صيانة 2024";
-        } else {
-          result.textContent = "متبقي على العميل فروق صيانة";
+      const ts = new TomSelect(unitSelect, {
+        placeholder: 'اختر رقم الوحدة...',
+        options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
+        onChange: (value) => {
+          resultContainer.innerHTML = "";
+
+          const matchedRow = rows.find(row => row[unitKey] === value);
+          if (matchedRow) {
+            const displayKeys = ["status", "2023", "2024", "ملاحظات"];
+            displayKeys.forEach(key => {
+              const p = document.createElement("p");
+              p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
+              resultContainer.appendChild(p);
+            });
+
+            ts.disable();
+            resetBtn.style.display = "inline-block";
+          } else {
+            const p = document.createElement("p");
+            p.textContent = "لم يتم العثور على البيانات.";
+            p.className = "no-data";
+            resultContainer.appendChild(p);
+          }
         }
-      } else {
-        result.textContent = "لم يتم العثور على رقم الوحدة";
-      }
-    }
+      });
 
-    document.getElementById("searchInput").addEventListener("input", searchUnit);
-
-    fetchData();
-  </script>
+      resetBtn.addEventListener("click", () => {
+        ts.clear();
+        ts.enable();
+        resultContainer.innerHTML = "";
+        resetBtn.style.display = "none";
+      });
+    })
+    .catch(err => {
+      document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات.";
+      console.error("خطأ:", err);
+    });
+</script>
 
 </body>
 </html>
