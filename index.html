@@ -22,11 +22,15 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    h2 {
+    h2, h3 {
       text-align: center;
       color: #2c3e50;
-      margin-bottom: 25px;
-      font-size: 22px;
+      margin-bottom: 15px;
+    }
+
+    h3 {
+      font-size: 18px;
+      color: #2980b9;
     }
 
     input {
@@ -39,11 +43,7 @@
       box-sizing: border-box;
     }
 
-    .summary, .result {
-      margin-top: 15px;
-    }
-
-    .summary p, .result p {
+    .result p {
       background-color: #fdfdfd;
       padding: 10px 15px;
       border-radius: 8px;
@@ -71,11 +71,15 @@
         font-size: 18px;
       }
 
+      h3 {
+        font-size: 16px;
+      }
+
       input {
         font-size: 15px;
       }
 
-      .summary p, .result p, .no-data {
+      .result p, .no-data {
         font-size: 14px;
       }
     }
@@ -85,11 +89,10 @@
 
   <div class="container">
     <h2>AMWAJ MAINTENANCE DIFFERENCE</h2>
+    <h3 id="sheetTitle">جاري تحميل البيانات...</h3>
 
     <input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
     <datalist id="units"></datalist>
-
-    <div class="summary" id="summaryContainer"></div>
 
     <div class="result" id="resultContainer"></div>
   </div>
@@ -109,16 +112,11 @@
         const unitInput = document.getElementById("unitInput");
         const unitList = document.getElementById("units");
         const resultContainer = document.getElementById("resultContainer");
-        const summaryContainer = document.getElementById("summaryContainer");
+        const sheetTitle = document.getElementById("sheetTitle");
 
-        // ✅ عرض بيانات الصف الأول (ملخص التقرير)
-        summaryRow.forEach((item, index) => {
-          if (item.trim()) {
-            const p = document.createElement("p");
-            p.textContent = ` ${item}`;
-            summaryContainer.appendChild(p);
-          }
-        });
+        // ✅ عرض بيانات الصف الأول كعنوان h3
+        const titleText = summaryRow.filter(item => item.trim()).join(" - ");
+        sheetTitle.textContent = titleText || "لا توجد بيانات";
 
         // ✅ تعبئة قائمة الوحدات بدون تكرار
         const seenUnits = new Set();
@@ -152,6 +150,7 @@
       })
       .catch(err => {
         console.error("حدث خطأ في تحميل البيانات:", err);
+        document.getElementById("sheetTitle").textContent = "تعذر تحميل عنوان التقرير";
       });
   </script>
 
