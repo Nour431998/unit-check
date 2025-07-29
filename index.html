@@ -46,7 +46,7 @@
     }
 
     .ts-wrapper {
-      background-color: #fdfcf8;
+      background-color: #fdfcf8; /* خلفية أوف وايت */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -106,14 +106,15 @@
 </div>
 
 <script>
-  const jsonUrl = "https://script.google.com/macros/s/AKfycbzJalGmXOkuB0eagDEuZiURzPwJjCNhNfcNxaNWDCZ7fBIi9FbNK9aIOyGvqvPh2LwQ/exec";
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
 
-  fetch(jsonUrl)
-    .then(response => response.json())
-    .then(json => {
-      const data = json.data;
-      const headers = json.headers || ["رقم الوحدة", "الخدمة", "التاريخ", "الفني", "الملاحظات"];
-      const sheetTitle = json.title || "الوحدات";
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(data => {
+      const allRows = data.trim().split('\n').map(row => row.split(','));
+      const sheetTitle = allRows[0][0]; // الصف الأول كعنوان
+      const headers = allRows[1];       // رؤوس الأعمدة
+      const rows = allRows.slice(2);    // البيانات
 
       document.getElementById("sheetTitle").textContent = sheetTitle;
 
@@ -124,18 +125,19 @@
       // إعداد Tom Select
       const ts = new TomSelect(unitSelect, {
         placeholder: 'اختر رقم الوحدة...',
-        options: [...new Set(data.map(row => row[0]))].map(unit => ({ value: unit, text: unit })),
+        options: rows.map(row => ({ value: row[0], text: row[0] })),
         onChange: (value) => {
           resultContainer.innerHTML = "";
 
-          const matchedRow = data.find(row => row[0] === value);
+          const matchedRow = rows.find(row => row[0] === value);
           if (matchedRow) {
-            for (let i = 1; i < matchedRow.length; i++) {
+            [1, 2, 3, 4].forEach(i => {
               const p = document.createElement("p");
               p.textContent = `${headers[i]}: ${matchedRow[i]}`;
               resultContainer.appendChild(p);
-            }
+            });
 
+            // تعطيل الحقل بعد الاختيار
             ts.disable();
             resetBtn.style.display = "inline-block";
           } else {
