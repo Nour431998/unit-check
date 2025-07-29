@@ -5,110 +5,131 @@
   <title>AMWAJ MAINTENANCE DIFFERENCE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Tom Select CSS -->
+  <!-- Tom Select -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
       direction: rtl;
-      text-align: right;
-      padding: 20px;
-      background-color: #f2f2f2;
     }
 
-    h1, h2, h3 {
-      color: #2c3e50;
+    .container {
+      max-width: 600px;
+      margin: 5vh auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
-    select, button {
-      width: 100%;
-      max-width: 400px;
-      padding: 12px;
-      margin: 10px 0;
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      color: #555;
       font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+      margin-bottom: 20px;
+      font-weight: normal;
     }
 
-    button {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #2980b9;
+    select, .ts-wrapper {
+      width: 100%;
+      margin-bottom: 20px;
     }
 
     .result p {
-      background: #ecf0f1;
+      background: #e9f5e9;
+      color: #2c3e50;
       padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-weight: bold;
     }
 
     .no-data {
-      color: red;
+      background: #fdecea;
+      color: #c0392b;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 2vh 10px;
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>AMWAJ MAINTENANCE DIFFERENCE</h1>
-  <h3 id="sheetTitle">جارٍ التحميل...</h3>
-
+<div class="container">
   <h2>ابحث برقم الوحدة</h2>
-  <select id="unitSelect" placeholder="اختر رقم الوحدة...">
-    <option value="">اختر رقم الوحدة</option>
-  </select>
+  <h3 id="sheetTitle">تحميل البيانات...</h3>
+
+  <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
 
   <div class="result" id="resultContainer"></div>
-  <button id="resetBtn" style="display: none;">بحث عن وحدة جديدة</button>
 
-  <!-- Tom Select JS -->
-  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+  <button id="resetBtn" style="display:none;">بحث عن وحدة جديدة</button>
+</div>
 
-  <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
+<script>
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
 
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(data => {
-        const allRows = data.trim().split('\n').map(row => row.split(','));
-        const sheetTitle = allRows[0][0];
-        document.getElementById("sheetTitle").textContent = sheetTitle;
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(data => {
+      const allRows = data.trim().split('\n').map(row => row.split(','));
+      const sheetTitle = allRows[0][0]; // الصف الأول بالكامل
+      const headers = allRows[1]; // رؤوس الأعمدة من الصف الثاني
+      const rows = allRows.slice(2); // البيانات من الصف الثالث
 
-        const headers = allRows[1];
-        const rows = allRows.slice(2);
+      document.getElementById("sheetTitle").textContent = sheetTitle;
 
-        const unitSelect = document.getElementById("unitSelect");
-        const resultContainer = document.getElementById("resultContainer");
-        const resetBtn = document.getElementById("resetBtn");
+      const unitSelect = document.getElementById("unitSelect");
+      const resultContainer = document.getElementById("resultContainer");
+      const resetBtn = document.getElementById("resetBtn");
 
-        rows.forEach(row => {
+      // تعبئة القائمة المنسدلة
+      rows.forEach(row => {
+        if (row[0]) {
           const option = document.createElement("option");
-          option.value = row[0];
-          option.textContent = row[0];
+          option.value = row[0].trim();
+          option.textContent = row[0].trim();
           unitSelect.appendChild(option);
-        });
+        }
+      });
 
-        // Initialize Tom Select
-        new TomSelect("#unitSelect", {
-          placeholder: "اختر رقم الوحدة...",
-          create: false,
-          maxItems: 1,
-          allowEmptyOption: true,
-          persist: false,
-          selectOnTab: true
-        });
-
-        unitSelect.addEventListener("change", () => {
-          const selectedValue = unitSelect.value;
-          const matchedRow = rows.find(row => row[0]?.trim() === selectedValue);
+      // تفعيل Tom Select
+      const select = new TomSelect(unitSelect, {
+        placeholder: 'اكتب أو اختر رقم الوحدة...',
+        allowEmptyOption: true,
+        onChange: function(value) {
           resultContainer.innerHTML = "";
+
+          const matchedRow = rows.find(row => row[0]?.trim() === value);
 
           if (matchedRow) {
             const fields = [1, 2, 3, 4];
@@ -117,24 +138,26 @@
               p.textContent = `${headers[i]}: ${matchedRow[i] || "لا يوجد"}`;
               resultContainer.appendChild(p);
             });
-            resetBtn.style.display = "block";
+            resetBtn.style.display = "inline-block";
           } else {
             resultContainer.innerHTML = "<p class='no-data'>لم يتم العثور على البيانات.</p>";
-            resetBtn.style.display = "block";
+            resetBtn.style.display = "inline-block";
           }
-        });
-
-        resetBtn.addEventListener("click", () => {
-          unitSelect.tomselect.clear(); // reset Tom Select
-          resultContainer.innerHTML = "";
-          resetBtn.style.display = "none";
-        });
-      })
-      .catch(error => {
-        console.error("حدث خطأ:", error);
-        document.getElementById("sheetTitle").textContent = "تعذر تحميل البيانات.";
+        }
       });
-  </script>
+
+      // زر إعادة البحث
+      resetBtn.addEventListener("click", () => {
+        select.clear();
+        resultContainer.innerHTML = "";
+        resetBtn.style.display = "none";
+      });
+    })
+    .catch(err => {
+      console.error("فشل تحميل البيانات:", err);
+      document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات.";
+    });
+</script>
 
 </body>
 </html>
