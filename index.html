@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver0.3</title>
+  <title>AMWAJ 2025 Ver0.4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tom Select -->
@@ -26,6 +26,18 @@
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       text-align: center;
+      position: relative;
+    }
+
+    .logo-container {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+    }
+
+    .logo-container img {
+      max-height: 50px;
+      height: auto;
     }
 
     h2 {
@@ -84,10 +96,33 @@
       background-color: #0056b3;
     }
 
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @media (max-width: 600px) {
       .container {
         margin: 2vh 10px;
         padding: 20px;
+      }
+      .logo-container {
+        top: 10px;
+        left: 10px;
+      }
+      .logo-container img {
+        max-height: 40px;
       }
     }
   </style>
@@ -95,8 +130,17 @@
 <body>
 
 <div class="container">
+  <!-- شعار المشروع -->
+  <div class="logo-container">
+    <img src="https://raw.githubusercontent.com/Nour431998/unit-check/main/Picture1.png" alt="Logo">
+  </div>
+
   <h2>AMWAJ MAINTENANCE DIFFERENCE 2025</h2>
-  <h3 id="sheetTitle"><span id="loading">⏳ تحميل البيانات...</span></h3>
+  <h3 id="sheetTitle">
+    <span id="loading">
+      ⏳ جاري التحميل <span class="spinner"></span>
+    </span>
+  </h3>
 
   <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
 
@@ -115,7 +159,7 @@
 
       const rows = json.data;
       const headers = Object.keys(rows[0]);
-      const unitKey = "Unit"; // ← عمود رقم الوحدة
+      const unitKey = "Unit";
 
       const unitSelect = document.getElementById("unitSelect");
       const resultContainer = document.getElementById("resultContainer");
