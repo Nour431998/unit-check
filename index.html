@@ -1,95 +1,66 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <title>عرض بيانات الوحدات</title>
+  <meta charset="UTF-8">
+  <title>البحث برقم الوحدة</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background-color: #f5f5f5;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
-      width: 300px;
-      margin-bottom: 20px;
+      font-family: Arial;
       direction: rtl;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background-color: #fff;
-    }
-
-    th, td {
       text-align: center;
-      padding: 10px;
-      border: 1px solid #ccc;
+      margin: 50px;
     }
-
-    th {
-      background-color: #eee;
+    select, #result {
+      font-size: 18px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
-<h2>بحث برقم الوحدة</h2>
-<input type="text" id="searchInput" placeholder="أدخل رقم الوحدة" onkeyup="filterTable()">
+  <h2>اختر رقم الوحدة</h2>
+  <select id="unitSelect">
+    <option value="">-- اختر رقم الوحدة --</option>
+  </select>
 
-<table id="dataTable">
-  <thead>
-    <tr id="headerRow"></tr>
-  </thead>
-  <tbody id="tableBody"></tbody>
-</table>
+  <div id="result"></div>
 
-<script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv";
+  <script>
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv";
 
-  fetch(csvUrl)
-    .then(response => response.text())
-    .then(data => {
-      const rows = data.trim().split('\n').map(row => row.split(','));
-      const headerRow = document.getElementById('headerRow');
-      const tableBody = document.getElementById('tableBody');
+    async function loadCSV() {
+      const response = await fetch(csvUrl);
+      const text = await response.text();
+      const rows = text.trim().split('\n').map(row => row.split(','));
 
-      // بناء رؤوس الجدول
-      rows[0].forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header;
-        headerRow.appendChild(th);
+      const select = document.getElementById('unitSelect');
+      const resultDiv = document.getElementById('result');
+
+      // إزالة العنوان (الصف الأول)
+      rows.shift();
+
+      // ملء القائمة المنسدلة
+      rows.forEach(([unit, value]) => {
+        const option = document.createElement('option');
+        option.value = unit;
+        option.textContent = unit;
+        select.appendChild(option);
       });
 
-      // بناء بيانات الصفوف
-      for (let i = 1; i < rows.length; i++) {
-        const tr = document.createElement('tr');
-        rows[i].forEach(cell => {
-          const td = document.createElement('td');
-          td.textContent = cell;
-          tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
-      }
-    });
+      // عند اختيار قيمة
+      select.addEventListener('change', () => {
+        const selected = select.value;
+        const found = rows.find(row => row[0] === selected);
+        if (found) {
+          resultDiv.innerHTML = `<p><strong>النتيجة:</strong> ${found[1]}</p>`;
+        } else {
+          resultDiv.innerHTML = `<p style="color: red;">لم يتم العثور على بيانات.</p>`;
+        }
+      });
+    }
 
-  function filterTable() {
-    const input = document.getElementById("searchInput").value.toUpperCase();
-    const rows = document.querySelectorAll("#dataTable tbody tr");
-
-    rows.forEach(row => {
-      const cell = row.cells[0]; // يفترض أن "رقم الوحدة" هو العمود الأول
-      if (cell && cell.textContent.toUpperCase().includes(input)) {
-        row.style.display = "";
-      } else {
-        row.style.display = "none";
-      }
-    });
-  }
-</script>
+    loadCSV();
+  </script>
 
 </body>
 </html>
