@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>البحث برقم الوحدة</title>
+<style>
+  body { font-family: Arial; padding: 20px; direction: rtl; background: #fafafa; }
+  input, button { padding: 10px 15px; margin: 5px; font-size: 17px; }
+  button { cursor: pointer; }
+  #result { margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+</style>
+</head>
+<body>
+
+<h2>البحث عن بيانات الوحدة</h2>
+<input type="text" id="unitInput" placeholder="اكتب رقم الوحدة">
+<button onclick="searchUnit()">بحث</button>
+
+<div id="result">النتيجة ستظهر هنا...</div>
+
+<script>
+  async function fetchData() {
+    const resp = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9‑Hq6mM4dy5diESIIPwt1b6/pub?output=csv");
+    const txt = await resp.text();
+    const rows = txt.trim().split('\n').map(r => r.split(','));
+    return rows;
+  }
+
+  async function searchUnit() {
+    const unit = document.getElementById("unitInput").value.trim();
+    const rows = await fetchData();
+    const headers = rows[0];
+    const found = rows.find((r,i) => i>0 && r[0] === unit);
+    const out = document.getElementById("result");
+
+    if (found) {
+      let html = "<h3>بيانات الوحدة:</h3><ul>";
+      headers.forEach((h, i) => {
+        html += `<li><strong>${h}:</strong> ${found[i] || ""}</li>`;
+      });
+      html += "</ul>";
+      out.innerHTML = html;
+    } else {
+      out.textContent = "لم يتم العثور على بيانات لهذه الوحدة.";
+    }
+  }
+</script>
+
+</body>
+</html>
