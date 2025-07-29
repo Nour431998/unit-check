@@ -4,125 +4,69 @@
   <meta charset="UTF-8">
   <title>AMWAJ MAINTENANCE DIFFERENCE</title>
   <style>
-    body {
-      font-family: Arial;
-      direction: rtl;
-      text-align: center;
-      padding: 30px;
-    }
-    .dropdown {
-      position: relative;
-      width: 300px;
-      margin: 0 auto;
-    }
-    #unitInput {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-    }
-    #suggestions {
-      border: 1px solid #ccc;
-      border-top: none;
-      max-height: 200px;
-      overflow-y: auto;
-      position: absolute;
-      background: white;
-      width: 100%;
-      z-index: 1000;
-    }
-    .suggestion {
-      padding: 8px;
-      cursor: pointer;
-    }
-    .suggestion:hover {
-      background-color: #eee;
-    }
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 80%;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #999;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
+    body { font-family: Arial; direction: rtl; text-align: right; padding: 20px; }
+    select, input { padding: 8px; width: 300px; margin-bottom: 20px; }
+    .result { margin-top: 20px; }
+    .result p { background: #f3f3f3; padding: 10px; border-radius: 6px; }
   </style>
 </head>
 <body>
-  <h2>برجاء ادخال رقم الوحدة</h2>
-  <div class="dropdown">
-    <input type="text" id="unitInput" placeholder="اكتب رقم الوحدة هنا">
-    <div id="suggestions"></div>
-  </div>
-  <div id="result" style="margin-top: 30px;"></div>
 
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv';
-    const input = document.getElementById('unitInput');
-    const suggestions = document.getElementById('suggestions');
-    const resultDiv = document.getElementById('result');
-    let rows = [];
-    let headers = [];
+<h2 id="mainTitle">جارٍ التحميل...</h2>
 
-    fetch(csvUrl)
-      .then(res => res.text())
-      .then(data => {
-        const allRows = data.trim().split('\n').map(r => r.split(','));
-        headers = allRows[0]; // الصف الأول يحتوي على العناوين
-        rows = allRows.slice(1); // بقية الصفوف هي البيانات
+<input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
+<datalist id="units"></datalist>
+
+<div class="result" id="resultContainer"></div>
+
+<script>
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
+
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(data => {
+      const allRows = data.trim().split('\n').map(row => row.split(','));
+
+      // تعيين العنوان من الصف الأول - العمود الأول
+      document.getElementById("mainTitle").textContent = allRows[0][0];
+
+      const headers = allRows[1]; // الصف الثاني كـ رؤوس أعمدة
+      const rows = allRows.slice(2); // البيانات تبدأ من الصف الثالث
+
+      const unitInput = document.getElementById("unitInput");
+      const unitList = document.getElementById("units");
+      const resultContainer = document.getElementById("resultContainer");
+
+      // إضافة الخيارات للقائمة المنسدلة
+      rows.forEach(row => {
+        const option = document.createElement("option");
+        option.value = row[0]; // رقم الوحدة
+        unitList.appendChild(option);
       });
 
-    input.addEventListener('input', () => {
-      const val = input.value.trim();
-      suggestions.innerHTML = '';
-      if (val === '') return;
+      unitInput.addEventListener("input", () => {
+        const unitValue = unitInput.value.trim();
+        const matchedRow = rows.find(row => row[0] === unitValue);
 
-      const matches = rows.filter(r => r[0].includes(val));
-      matches.forEach(row => {
-        const div = document.createElement('div');
-        div.classList.add('suggestion');
-        div.textContent = row[0];
-        div.addEventListener('click', () => {
-          input.value = row[0];
-          suggestions.innerHTML = '';
-          showResult(row);
-        });
-        suggestions.appendChild(div);
+        resultContainer.innerHTML = "";
+
+        if (matchedRow) {
+          const fields = [1, 2, 3, 4]; // الأعمدة الثانية والثالثة والرابعة والخامسة
+          fields.forEach(i => {
+            const p = document.createElement("p");
+            p.textContent = `${headers[i]}: ${matchedRow[i]}`;
+            resultContainer.appendChild(p);
+          });
+        } else {
+          resultContainer.innerHTML = "<p>لم يتم العثور على البيانات.</p>";
+        }
       });
-
-      if (matches.length === 0) {
-        suggestions.innerHTML = '<div class="suggestion">لا توجد نتائج</div>';
-      }
+    })
+    .catch(err => {
+      console.error("حدث خطأ في تحميل البيانات:", err);
+      document.getElementById("mainTitle").textContent = "فشل في تحميل العنوان";
     });
+</script>
 
-    function showResult(row) {
-      const html = `
-        <table>
-          <tr>
-            <th>${headers[1]}</th>
-            <th>${headers[2]}</th>
-            <th>${headers[3]}</th>
-            <th>${headers[4]}</th>
-          </tr>
-          <tr>
-            <td>${row[1] || ''}</td>
-            <td>${row[2] || ''}</td>
-            <td>${row[3] || ''}</td>
-            <td>${row[4] || ''}</td>
-          </tr>
-        </table>
-      `;
-      resultDiv.innerHTML = html;
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.dropdown')) {
-        suggestions.innerHTML = '';
-      }
-    });
-  </script>
 </body>
 </html>
