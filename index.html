@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver0.1</title>
+  <title>AMWAJ 2025 Ver0.2 - Fast JSON</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tom Select -->
@@ -46,7 +46,7 @@
     }
 
     .ts-wrapper {
-      background-color: #fdfcf8; /* خلفية أوف وايت */
+      background-color: #fdfcf8;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -96,7 +96,7 @@
 
 <div class="container">
   <h2>AMWAJ MAINTENANCE DIFFERENCE 2025</h2>
-  <h3 id="sheetTitle">تحميل البيانات...</h3>
+  <h3 id="sheetTitle"><span id="loading">⏳ تحميل البيانات...</span></h3>
 
   <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
 
@@ -106,38 +106,34 @@
 </div>
 
 <script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
+  const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
 
-  fetch(csvUrl)
-    .then(response => response.text())
-    .then(data => {
-      const allRows = data.trim().split('\n').map(row => row.split(','));
-      const sheetTitle = allRows[0][0]; // الصف الأول كعنوان
-      const headers = allRows[1];       // رؤوس الأعمدة
-      const rows = allRows.slice(2);    // البيانات
+  fetch(jsonUrl)
+    .then(res => res.json())
+    .then(json => {
+      document.getElementById("sheetTitle").textContent = json.title;
 
-      document.getElementById("sheetTitle").textContent = sheetTitle;
+      const rows = json.data;
+      const headers = Object.keys(rows[0]);
 
       const unitSelect = document.getElementById("unitSelect");
       const resultContainer = document.getElementById("resultContainer");
       const resetBtn = document.getElementById("resetBtn");
 
-      // إعداد Tom Select
       const ts = new TomSelect(unitSelect, {
         placeholder: 'اختر رقم الوحدة...',
-        options: rows.map(row => ({ value: row[0], text: row[0] })),
+        options: rows.map(row => ({ value: row[headers[0]], text: row[headers[0]] })),
         onChange: (value) => {
           resultContainer.innerHTML = "";
 
-          const matchedRow = rows.find(row => row[0] === value);
+          const matchedRow = rows.find(row => row[headers[0]] === value);
           if (matchedRow) {
-            [1, 2, 3, 4].forEach(i => {
+            for (let i = 1; i <= 4; i++) {
               const p = document.createElement("p");
-              p.textContent = `${headers[i]}: ${matchedRow[i]}`;
+              p.textContent = `${headers[i]}: ${matchedRow[headers[i]]}`;
               resultContainer.appendChild(p);
-            });
+            }
 
-            // تعطيل الحقل بعد الاختيار
             ts.disable();
             resetBtn.style.display = "inline-block";
           } else {
