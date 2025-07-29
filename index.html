@@ -1,102 +1,101 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver0.9</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Tom Select -->
-  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>استعلام الوحدات</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
       margin: 0;
       padding: 0;
-      direction: rtl;
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f2f5;
     }
 
-    .container, .logo-bar-container {
+    .logo-bar-container {
+      background-color: #fff;
+      padding: 10px 20px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .container {
+      background-color: #fff;
+      margin: 4vh auto;
       max-width: 800px;
-      margin: 5vh auto;
-      background: white;
-      padding: 30px;
+      padding: 20px 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
       text-align: center;
-      position: relative;
+      margin-bottom: 25px;
+      margin-top: 15px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
     }
 
     .logo-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: nowrap;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .logo-bar img {
-      width: 48%;
+      width: 38%;
       height: auto;
       object-fit: contain;
     }
 
-    h2 {
-      color: #333;
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-
-    h3 {
-      color: #555;
-      font-size: 16px;
-      margin-bottom: 20px;
-      font-weight: normal;
-    }
-
-    select, .ts-wrapper {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-
-    .ts-wrapper {
-      background-color: #fdfcf8;
+    .spinner-container {
       display: flex;
-      justify-content: center;
       align-items: center;
-      text-align: center;
-      border-radius: 8px;
-      padding: 10px;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
     }
 
-    .result p {
-      background: #e9f5e9;
-      color: #2c3e50;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      font-weight: bold;
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #ccc;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
 
-    .no-data {
-      background: #fdecea;
-      color: #c0392b;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin-top: 20px;
-      border-radius: 8px;
-      cursor: pointer;
+    .loading-text {
       font-size: 16px;
-    }
-
-    button:hover {
-      background-color: #0056b3;
+      color: #555;
     }
 
     @media (max-width: 600px) {
@@ -112,97 +111,87 @@
       }
 
       .logo-bar img {
-        width: 45%;
+        width: 40%;
       }
-    }
-
-    @keyframes loadingDots {
-      0%   { content: '⏳ تحميل البيانات'; }
-      33%  { content: '⏳ تحميل البيانات.'; }
-      66%  { content: '⏳ تحميل البيانات..'; }
-      100% { content: '⏳ تحميل البيانات...'; }
-    }
-
-    #loading::after {
-      content: '';
-      animation: loadingDots 1.5s infinite steps(4, end);
     }
   </style>
 </head>
 <body>
 
-<div class="logo-bar-container">
-  <div class="logo-bar">
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+  <div class="logo-bar-container">
+    <div class="logo-bar">
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Logo Left">
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Logo Right">
+    </div>
   </div>
-</div>
 
-<div class="container">
-  <h2>AMWAJ MAINTENANCE DIFFERENCE 2025</h2>
-  <h3 id="sheetTitle"><span id="loading">⏳ تحميل البيانات</span></h3>
+  <div class="container">
+    <div class="spinner-container" id="loadingSpinner">
+      <div class="spinner"></div>
+      <div class="loading-text">جاري تحميل البيانات...</div>
+    </div>
+    <h3 id="sheetTitle" style="display: none;"></h3>
+    <h2>برجاء إدخال رقم الوحدة</h2>
+    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="مثال: A101 أو 101" />
 
-  <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>الوحدة</th>
+          <th>الحالة</th>
+          <th>2023</th>
+          <th>2024</th>
+          <th>ملاحظات</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- سيتم تعبئة البيانات هنا -->
+      </tbody>
+    </table>
+  </div>
 
-  <div class="result" id="resultContainer"></div>
+  <script>
+    const sheetURL = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
 
-  <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
-</div>
+    fetch(sheetURL)
+      .then(res => res.json())
+      .then(json => {
+        document.getElementById("loadingSpinner").style.display = "none";
+        const sheetTitle = document.getElementById("sheetTitle");
+        sheetTitle.style.display = "block";
+        sheetTitle.textContent = json.title;
 
-<script>
-  const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
+        const data = json.content;
+        const tableBody = document.getElementById("tableBody");
+        data.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tableBody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        document.getElementById("loadingSpinner").innerHTML = "فشل تحميل البيانات ❌";
+        console.error("Fetch error:", err);
+      });
 
-  fetch(jsonUrl)
-    .then(res => res.json())
-    .then(json => {
-      document.getElementById("sheetTitle").textContent = json.title;
+    function filterTable() {
+      const input = document.getElementById("searchInput").value.toUpperCase();
+      const table = document.getElementById("dataTable");
+      const tr = table.getElementsByTagName("tr");
 
-      const rows = json.data;
-      const headers = Object.keys(rows[0]);
-      const unitKey = "Unit";
-
-      const unitSelect = document.getElementById("unitSelect");
-      const resultContainer = document.getElementById("resultContainer");
-      const resetBtn = document.getElementById("resetBtn");
-
-      const ts = new TomSelect(unitSelect, {
-        placeholder: 'اختر رقم الوحدة...',
-        options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-        onChange: (value) => {
-          resultContainer.innerHTML = "";
-
-          const matchedRow = rows.find(row => row[unitKey] === value);
-          if (matchedRow) {
-            const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-            displayKeys.forEach(key => {
-              const p = document.createElement("p");
-              p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
-              resultContainer.appendChild(p);
-            });
-
-            ts.disable();
-            resetBtn.style.display = "inline-block";
-          } else {
-            const p = document.createElement("p");
-            p.textContent = "لم يتم العثور على البيانات.";
-            p.className = "no-data";
-            resultContainer.appendChild(p);
-          }
+      for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          const txtValue = td.textContent || td.innerText;
+          tr[i].style.display = txtValue.toUpperCase().indexOf(input) > -1 ? "" : "none";
         }
-      });
-
-      resetBtn.addEventListener("click", () => {
-        ts.clear();
-        ts.enable();
-        resultContainer.innerHTML = "";
-        resetBtn.style.display = "none";
-      });
-    })
-    .catch(err => {
-      document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات.";
-      console.error("خطأ:", err);
-    });
-</script>
+      }
+    }
+  </script>
 
 </body>
 </html>
