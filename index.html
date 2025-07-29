@@ -2,145 +2,155 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AMWAJ MAINTENANCE DIFFERENCE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tom Select -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
       margin: 0;
       padding: 0;
-      background: #e5e5e5;
       direction: rtl;
-      text-align: center;
     }
 
     .container {
-      max-width: 500px;
-      margin: 60px auto;
-      background: #f9f9f9;
-      padding: 30px 20px;
+      max-width: 600px;
+      margin: 5vh auto;
+      background: white;
+      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
-    h1 {
-      margin-bottom: 10px;
+    h2 {
       color: #333;
+      margin-bottom: 10px;
     }
 
     h3 {
+      color: #555;
+      font-size: 16px;
       margin-bottom: 20px;
-      color: #666;
+      font-weight: normal;
     }
 
-    input[list], button {
-      width: 90%;
+    select, .ts-wrapper {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .result p {
+      background: #e9f5e9;
+      color: #2c3e50;
       padding: 10px;
       margin: 10px 0;
-      font-size: 16px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      font-weight: bold;
+    }
+
+    .no-data {
+      background: #fdecea;
+      color: #c0392b;
     }
 
     button {
       background-color: #007bff;
       color: white;
       border: none;
+      padding: 10px 20px;
+      margin-top: 20px;
+      border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    .result {
-      margin-top: 20px;
-    }
-
-    .result p {
-      background: #fff;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      text-align: right;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    #resetBtn {
-      display: none;
+    @media (max-width: 600px) {
+      .container {
+        margin: 2vh 10px;
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>AMWAJ MAINTENANCE DIFFERENCE</h1>
-    <h3 id="unitLabel">رقم الوحدة</h3>
+<div class="container">
+  <h2>ابحث برقم الوحدة</h2>
+  <h3 id="sheetTitle">تحميل البيانات...</h3>
 
-    <input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
-    <datalist id="units"></datalist>
+  <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
 
-    <button id="resetBtn">بحث عن وحدة جديدة</button>
+  <div class="result" id="resultContainer"></div>
 
-    <div class="result" id="resultContainer"></div>
-  </div>
+  <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
+</div>
 
-  <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
+<script>
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
 
-    let rows = [];
-    let headers = [];
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(data => {
+      const allRows = data.trim().split('\n').map(row => row.split(','));
+      const sheetTitle = allRows[0][0]; // الصف الأول كعنوان
+      const headers = allRows[1];       // رؤوس الأعمدة
+      const rows = allRows.slice(2);    // البيانات
 
-    const unitInput = document.getElementById("unitInput");
-    const unitList = document.getElementById("units");
-    const resultContainer = document.getElementById("resultContainer");
-    const resetBtn = document.getElementById("resetBtn");
+      document.getElementById("sheetTitle").textContent = sheetTitle;
 
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(data => {
-        const allRows = data.trim().split('\n').map(row => row.split(','));
-        headers = allRows[1]; // الصف الثاني كرؤوس
-        rows = allRows.slice(2); // البيانات تبدأ من الصف الثالث
+      const unitSelect = document.getElementById("unitSelect");
+      const resultContainer = document.getElementById("resultContainer");
+      const resetBtn = document.getElementById("resetBtn");
 
-        const unitNumbers = new Set();
-        rows.forEach(row => {
-          const unit = row[0];
-          if (unit && !unitNumbers.has(unit)) {
-            unitNumbers.add(unit);
-            const option = document.createElement("option");
-            option.value = unit;
-            unitList.appendChild(option);
+      // إعداد Tom Select
+      const ts = new TomSelect(unitSelect, {
+        placeholder: 'اختر رقم الوحدة...',
+        options: rows.map(row => ({ value: row[0], text: row[0] })),
+        onChange: (value) => {
+          resultContainer.innerHTML = "";
+
+          const matchedRow = rows.find(row => row[0] === value);
+          if (matchedRow) {
+            [1, 2, 3, 4].forEach(i => {
+              const p = document.createElement("p");
+              p.textContent = `${headers[i]}: ${matchedRow[i]}`;
+              resultContainer.appendChild(p);
+            });
+
+            // تعطيل الحقل بعد الاختيار
+            ts.disable();
+            resetBtn.style.display = "inline-block";
+          } else {
+            const p = document.createElement("p");
+            p.textContent = "لم يتم العثور على البيانات.";
+            p.className = "no-data";
+            resultContainer.appendChild(p);
           }
-        });
+        }
       });
 
-    unitInput.addEventListener("change", () => {
-      const unitValue = unitInput.value.trim();
-      const matchedRow = rows.find(row => row[0] === unitValue);
-      resultContainer.innerHTML = "";
-
-      if (matchedRow) {
-        [1, 2, 3, 4].forEach(i => {
-          const p = document.createElement("p");
-          p.textContent = `${headers[i]}: ${matchedRow[i]}`;
-          resultContainer.appendChild(p);
-        });
-
-        unitInput.disabled = true;
-        resetBtn.style.display = "inline-block";
-      } else {
-        resultContainer.innerHTML = "<p>لم يتم العثور على البيانات.</p>";
-      }
+      resetBtn.addEventListener("click", () => {
+        ts.clear();
+        ts.enable();
+        resultContainer.innerHTML = "";
+        resetBtn.style.display = "none";
+      });
+    })
+    .catch(err => {
+      document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات.";
+      console.error("خطأ:", err);
     });
-
-    resetBtn.addEventListener("click", () => {
-      unitInput.value = "";
-      unitInput.disabled = false;
-      resultContainer.innerHTML = "";
-      resetBtn.style.display = "none";
-    });
-  </script>
+</script>
 
 </body>
 </html>
