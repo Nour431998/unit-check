@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver1.0</title>
+  <title>AMWAJ 2025 Ver1.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tom Select -->
@@ -42,9 +42,8 @@
       object-fit: contain;
     }
 
-    /* تخصيص الصورة الثانية */
     .logo-bar img:last-child {
-      transform: scale(1.1); /* زيادة 10% */
+      max-width: 58%; /* تعديل صورة Picture2 لتكون أعرض 10% */
     }
 
     h2 {
@@ -117,22 +116,22 @@
       .logo-bar img {
         max-width: 80%;
       }
-
-      .logo-bar img:last-child {
-        transform: scale(1.1); /* تحافظ على نفس التكبير في الجوال */
-      }
     }
 
-    @keyframes loadingDots {
-      0%   { content: '⏳ تحميل البيانات'; }
-      33%  { content: '⏳ تحميل البيانات.'; }
-      66%  { content: '⏳ تحميل البيانات..'; }
-      100% { content: '⏳ تحميل البيانات...'; }
+    /* لودر دائري */
+    .spinner {
+      margin: 0 auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
     }
 
-    #loading::after {
-      content: '';
-      animation: loadingDots 1.5s infinite steps(4, end);
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -146,7 +145,9 @@
   </div>
 
   <h2>AMWAJ MAINTENANCE DIFFERENCE 2025</h2>
-  <h3 id="sheetTitle"><span id="loading">⏳ تحميل البيانات</span></h3>
+  <h3 id="sheetTitle">
+    <div id="loading" class="spinner"></div>
+  </h3>
 
   <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
 
