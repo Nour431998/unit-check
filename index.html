@@ -3,64 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <title>البحث برقم الوحدة</title>
-  <style>
-    body {
-      font-family: Arial;
-      direction: rtl;
-      text-align: center;
-      margin: 50px;
-    }
-    select, #result {
-      font-size: 18px;
-      margin-top: 20px;
-    }
-  </style>
 </head>
-<body>
+<body style="font-family: Arial; direction: rtl; text-align: center;">
+  <h2>البحث برقم الوحدة</h2>
 
-  <h2>اختر رقم الوحدة</h2>
+  <label for="unitSelect">اختر رقم الوحدة:</label>
   <select id="unitSelect">
     <option value="">-- اختر رقم الوحدة --</option>
   </select>
 
-  <div id="result"></div>
+  <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv";
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv';
 
-    async function loadCSV() {
-      const response = await fetch(csvUrl);
-      const text = await response.text();
-      const rows = text.trim().split('\n').map(row => row.split(','));
+    const select = document.getElementById('unitSelect');
+    const resultDiv = document.getElementById('result');
 
-      const select = document.getElementById('unitSelect');
-      const resultDiv = document.getElementById('result');
+    fetch(csvUrl)
+      .then(response => response.text())
+      .then(data => {
+        const rows = data.trim().split('\n').map(row => row.split(','));
+        const header = rows.shift(); // تجاهل أول صف (العناوين)
 
-      // إزالة العنوان (الصف الأول)
-      rows.shift();
+        // تعبئة القائمة المنسدلة
+        rows.forEach(row => {
+          const option = document.createElement('option');
+          option.value = row[0]; // العمود الأول = رقم الوحدة
+          option.textContent = row[0];
+          select.appendChild(option);
+        });
 
-      // ملء القائمة المنسدلة
-      rows.forEach(([unit, value]) => {
-        const option = document.createElement('option');
-        option.value = unit;
-        option.textContent = unit;
-        select.appendChild(option);
+        // عند اختيار عنصر من القائمة
+        select.addEventListener('change', () => {
+          const selected = select.value;
+          if (!selected) {
+            resultDiv.innerHTML = "";
+            return;
+          }
+
+          const match = rows.find(row => row[0] === selected);
+          if (match) {
+            resultDiv.innerHTML = `<p><strong>النتيجة:</strong> ${match[1]}</p>`; // العمود الثاني
+          } else {
+            resultDiv.innerHTML = `<p style="color: red;">لم يتم العثور على بيانات.</p>`;
+          }
+        });
+      })
+      .catch(error => {
+        resultDiv.innerHTML = `<p style="color: red;">فشل تحميل البيانات.</p>`;
+        console.error(error);
       });
-
-      // عند اختيار قيمة
-      select.addEventListener('change', () => {
-        const selected = select.value;
-        const found = rows.find(row => row[0] === selected);
-        if (found) {
-          resultDiv.innerHTML = `<p><strong>النتيجة:</strong> ${found[1]}</p>`;
-        } else {
-          resultDiv.innerHTML = `<p style="color: red;">لم يتم العثور على بيانات.</p>`;
-        }
-      });
-    }
-
-    loadCSV();
   </script>
-
 </body>
 </html>
