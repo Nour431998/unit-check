@@ -7,53 +7,46 @@
 <body style="font-family: Arial; direction: rtl; text-align: center;">
   <h2>البحث برقم الوحدة</h2>
 
-  <label for="unitSelect">اختر رقم الوحدة:</label>
-  <select id="unitSelect">
-    <option value="">-- اختر رقم الوحدة --</option>
-  </select>
+  <label for="unitInput">اكتب رقم الوحدة أو اختر:</label>
+  <input type="text" id="unitInput" list="unitList" placeholder="اكتب رقم الوحدة هنا">
+  <datalist id="unitList"></datalist>
 
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv';
 
-    const select = document.getElementById('unitSelect');
+    const input = document.getElementById('unitInput');
+    const dataList = document.getElementById('unitList');
     const resultDiv = document.getElementById('result');
+    let rows = [];
 
     fetch(csvUrl)
       .then(response => response.text())
       .then(data => {
-        const rows = data.trim().split('\n').map(row => row.split(','));
-        const header = rows.shift(); // تجاهل أول صف (العناوين)
+        rows = data.trim().split('\n').map(row => row.split(','));
+        rows.shift(); // حذف العناوين
 
-        // تعبئة القائمة المنسدلة
         rows.forEach(row => {
           const option = document.createElement('option');
-          option.value = row[0]; // العمود الأول = رقم الوحدة
-          option.textContent = row[0];
-          select.appendChild(option);
-        });
-
-        // عند اختيار عنصر من القائمة
-        select.addEventListener('change', () => {
-          const selected = select.value;
-          if (!selected) {
-            resultDiv.innerHTML = "";
-            return;
-          }
-
-          const match = rows.find(row => row[0] === selected);
-          if (match) {
-            resultDiv.innerHTML = `<p><strong>النتيجة:</strong> ${match[1]}</p>`; // العمود الثاني
-          } else {
-            resultDiv.innerHTML = `<p style="color: red;">لم يتم العثور على بيانات.</p>`;
-          }
+          option.value = row[0]; // العمود الأول
+          dataList.appendChild(option);
         });
       })
       .catch(error => {
         resultDiv.innerHTML = `<p style="color: red;">فشل تحميل البيانات.</p>`;
         console.error(error);
       });
+
+    input.addEventListener('change', () => {
+      const selected = input.value.trim();
+      const match = rows.find(row => row[0] === selected);
+      if (match) {
+        resultDiv.innerHTML = `<p><strong>النتيجة:</strong> ${match[1]}</p>`;
+      } else {
+        resultDiv.innerHTML = `<p style="color: red;">لم يتم العثور على بيانات.</p>`;
+      }
+    });
   </script>
 </body>
 </html>
