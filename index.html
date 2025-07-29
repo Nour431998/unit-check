@@ -128,27 +128,25 @@
 </head>
 <body>
 
-<div id="auth-container" class="container">
-  <h2>تسجيل الدخول</h2>
-  <input type="email" id="email" placeholder="البريد الإلكتروني" style="width:100%; padding:10px; margin-bottom:10px;">
-  <input type="password" id="password" placeholder="كلمة المرور" style="width:100%; padding:10px; margin-bottom:10px;">
-  <button onclick="login()">دخول</button>
-  <p id="auth-error" style="color: red;"></p>
+<div id="auth-container" class="container" style="background: linear-gradient(to bottom right, #ffffff, #eef1f5); box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+  <h2 style="color: #007bff; font-weight: bold; margin-bottom: 20px;">🔐 تسجيل الدخول</h2>
+
+  <div style="position: relative; margin-bottom: 15px;">
+    <input type="email" id="email" placeholder="البريد الإلكتروني" style="width: 100%; padding: 12px 40px 12px 12px; border: 1px solid #ccc; border-radius: 8px;">
+    <span style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #888;">📧</span>
+  </div>
+
+  <div style="position: relative; margin-bottom: 15px;">
+    <input type="password" id="password" placeholder="كلمة المرور" style="width: 100%; padding: 12px 40px 12px 12px; border: 1px solid #ccc; border-radius: 8px;">
+    <span style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #888;">🔒</span>
+  </div>
+
+  <button onclick="login()" style="background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; width: 100%; transition: background-color 0.3s;">
+    دخول ➤
+  </button>
+
+  <p id="auth-error" style="color: red; margin-top: 15px;"></p>
 </div>
-
-<div id="main-container" style="display: none;">
-  <div class="container">
-    <div class="logo-bar">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
-    </div>
-
-    <h2>MAINTENANCE DIFFERENCE 2025</h2>
-    <h3 id="sheetTitle"><span id="loading">تحميل البيانات</span></h3>
-
-    <div id="selectContainer">
-      <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
-    </div>
 
     <div class="result" id="resultContainer"></div>
     <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
