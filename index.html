@@ -39,13 +39,13 @@
       box-sizing: border-box;
     }
 
-    .result {
-      margin-top: 20px;
+    .summary, .result {
+      margin-top: 15px;
     }
 
-    .result p {
-      background-color: #eaf4ff;
-      padding: 12px 15px;
+    .summary p, .result p {
+      background-color: #fdfdfd;
+      padding: 10px 15px;
       border-radius: 8px;
       margin-bottom: 10px;
       color: #333;
@@ -75,7 +75,7 @@
         font-size: 15px;
       }
 
-      .result p, .no-data {
+      .summary p, .result p, .no-data {
         font-size: 14px;
       }
     }
@@ -89,6 +89,8 @@
     <input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
     <datalist id="units"></datalist>
 
+    <div class="summary" id="summaryContainer"></div>
+
     <div class="result" id="resultContainer"></div>
   </div>
 
@@ -99,14 +101,26 @@
       .then(response => response.text())
       .then(data => {
         const allRows = data.trim().split('\n').map(row => row.split(','));
-        const headers = allRows[1]; // الصف الثاني فيه رؤوس الأعمدة
-        const rows = allRows.slice(2); // البيانات من الصف الثالث
+
+        const summaryRow = allRows[0];  // الصف الأول = ملخص
+        const headers = allRows[1];     // الصف الثاني = رؤوس الأعمدة
+        const rows = allRows.slice(2);  // باقي الصفوف = بيانات
 
         const unitInput = document.getElementById("unitInput");
         const unitList = document.getElementById("units");
         const resultContainer = document.getElementById("resultContainer");
+        const summaryContainer = document.getElementById("summaryContainer");
 
-        // تعبئة القائمة المنسدلة
+        // ✅ عرض بيانات الصف الأول (ملخص التقرير)
+        summaryRow.forEach((item, index) => {
+          if (item.trim()) {
+            const p = document.createElement("p");
+            p.textContent = ` ${item}`;
+            summaryContainer.appendChild(p);
+          }
+        });
+
+        // ✅ تعبئة قائمة الوحدات بدون تكرار
         const seenUnits = new Set();
         rows.forEach(row => {
           const unit = row[0]?.trim();
@@ -118,13 +132,14 @@
           }
         });
 
+        // ✅ البحث وعرض النتائج
         unitInput.addEventListener("input", () => {
           const unitValue = unitInput.value.trim();
           const matchedRow = rows.find(row => row[0]?.trim() === unitValue);
           resultContainer.innerHTML = "";
 
           if (matchedRow) {
-            const fields = [1, 2, 3, 4]; // الأعمدة المطلوبة
+            const fields = [1, 2, 3, 4]; // الأعمدة المطلوبة B-E
             fields.forEach(i => {
               const p = document.createElement("p");
               p.textContent = `${headers[i]}: ${matchedRow[i] || "لا يوجد"}`;
