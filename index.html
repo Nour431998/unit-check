@@ -1,244 +1,237 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver1.4</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <title>وحدة الصيانة</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
       margin: 0;
       padding: 0;
-      direction: rtl;
     }
+
     .container {
-      max-width: 600px;
-      margin: 5vh auto;
-      background: white;
-      padding: 30px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      margin-top: 40px;
+    }
+
+    h2, h3 {
       text-align: center;
     }
-    .logo-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      gap: 10px;
-    }
-    .logo-bar img {
-      max-height: 60px;
-      max-width: 48%;
-      object-fit: contain;
-    }
-    h2 {
-      color: #333;
-      margin-top: 10px;
-      margin-bottom: 10px;
-    }
-    h3 {
-      color: #555;
-      font-size: 16px;
-      margin-bottom: 20px;
-      font-weight: normal;
-    }
-    select, .ts-wrapper {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    .ts-wrapper {
-      background-color: #fdfcf8;
+
+    #selectContainer {
       display: flex;
       justify-content: center;
-      align-items: center;
-      text-align: center;
-      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    #unitSelect {
       padding: 10px;
+      font-size: 16px;
+      width: 60%;
     }
-    .result p {
-      background: #e9f5e9;
-      color: #2c3e50;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-    .result .unit-number {
-      background: #f5e1d4;
-      color: #000;
+
+    .result {
+      margin-top: 20px;
       text-align: center;
-      font-size: 18px;
     }
-    .no-data {
-      background: #fdecea;
-      color: #c0392b;
-    }
-    button {
+
+    #resetBtn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 10px 20px;
-      margin-top: 20px;
-      border-radius: 8px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
     }
-    button:hover {
-      background-color: #0056b3;
+
+    .logo-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
+
+    .logo-bar img {
+      width: 120px;
+      max-width: 40%;
+    }
+
+    /* تسجيل الدخول */
+    #auth-container {
+      max-width: 400px;
+      margin: 80px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #auth-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    #auth-container button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* تحميل البيانات */
     #loading::after {
-      content: '';
+      content: "";
       display: inline-block;
-      width: 16px;
-      height: 16px;
-      margin-right: 8px;
-      border: 3px solid #007bff;
-      border-top: 3px solid transparent;
+      width: 12px;
+      height: 12px;
+      margin-left: 8px;
+      border: 2px solid #007bff;
+      border-top: 2px solid transparent;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      vertical-align: middle;
     }
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    @media (max-width: 600px) {
-      .container {
-        margin: 2vh 10px;
-        padding: 20px;
-      }
+
+    @media (max-width: 768px) {
       .logo-bar {
         flex-direction: row;
         justify-content: space-between;
-        gap: 10px;
+        align-items: center;
       }
+
       .logo-bar img {
-        max-width: 48%;
-      }
-      .logo-bar img:last-child {
-        max-width: 58%;
+        width: 100px;
       }
     }
   </style>
 </head>
 <body>
 
-<div id="auth-container" class="container" style="background: linear-gradient(to bottom right, #ffffff, #eef1f5); box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
-  <h2 style="color: #007bff; font-weight: bold; margin-bottom: 20px;">🔐 تسجيل الدخول</h2>
-
-  <div style="position: relative; margin-bottom: 15px;">
-    <input type="email" id="email" placeholder="البريد الإلكتروني" style="width: 100%; padding: 12px 40px 12px 12px; border: 1px solid #ccc; border-radius: 8px;">
-    <span style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #888;">📧</span>
+  <!-- تسجيل الدخول -->
+  <div id="auth-container">
+    <h2>تسجيل الدخول</h2>
+    <input type="email" id="email" placeholder="البريد الإلكتروني">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <button onclick="login()">دخول</button>
+    <p id="auth-error" style="color:red;"></p>
   </div>
 
-  <div style="position: relative; margin-bottom: 15px;">
-    <input type="password" id="password" placeholder="كلمة المرور" style="width: 100%; padding: 12px 40px 12px 12px; border: 1px solid #ccc; border-radius: 8px;">
-    <span style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: #888;">🔒</span>
+  <!-- المحتوى بعد تسجيل الدخول -->
+  <div id="main-container" style="display: none;">
+    <div class="container">
+      <div class="logo-bar">
+        <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
+        <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+      </div>
+
+      <h2>MAINTENANCE DIFFERENCE 2025</h2>
+      <h3 id="sheetTitle"><span id="loading">تحميل البيانات</span></h3>
+
+      <div id="selectContainer">
+        <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
+      </div>
+
+      <div class="result" id="resultContainer"></div>
+      <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
+    </div>
   </div>
 
-  <button onclick="login()" style="background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; width: 100%; transition: background-color 0.3s;">
-    دخول ➤
-  </button>
+  <!-- Firebase + بيانات الوحدة -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  <p id="auth-error" style="color: red; margin-top: 15px;"></p>
-</div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBHFt0nYl_Sd7C4YJctTA5yRF3T0EAR5J8",
+      authDomain: "unit-check-684a5.firebaseapp.com",
+      projectId: "unit-check-684a5",
+      storageBucket: "unit-check-684a5.appspot.com",
+      messagingSenderId: "963222945184",
+      appId: "1:963222945184:web:fe8f5aa1793228157fb8c5",
+      measurementId: "G-06QG6T6BYD"
+    };
 
-    <div class="result" id="resultContainer"></div>
-    <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
-  </div>
-</div>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBHFt0nYl_Sd7C4YJctTA5yRF3T0EAR5J8",
-    authDomain: "unit-check-684a5.firebaseapp.com",
-    projectId: "unit-check-684a5",
-    storageBucket: "unit-check-684a5.appspot.com",
-    messagingSenderId: "963222945184",
-    appId: "1:963222945184:web:fe8f5aa1793228157fb8c5"
-  };
+    function showMainContent() {
+      document.getElementById("auth-container").style.display = "none";
+      document.getElementById("main-container").style.display = "block";
+      loadUnitData(); // استدعاء البيانات بعد الدخول
+    }
 
-  firebase.initializeApp(firebaseConfig);
+    window.login = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-  function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then(() => {
-        document.getElementById("auth-container").style.display = "none";
-        document.getElementById("main-container").style.display = "block";
-        loadData();
-      })
-      .catch(error => {
-        document.getElementById("auth-error").textContent = "فشل تسجيل الدخول: " + error.message;
-      });
-  }
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          showMainContent();
+        })
+        .catch((error) => {
+          document.getElementById("auth-error").textContent = "فشل تسجيل الدخول: " + error.message;
+        });
+    };
 
-  function loadData() {
-    const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
+    // تحميل البيانات من Google Sheets
+    async function loadUnitData() {
+      const sheetUrl = "https://script.google.com/macros/s/AKfycbzJalGmXOkuB0eagDEuZiURzPwJjCNhNfcNxaNWDCZ7fBIi9FbNK9aIOyGvqvPh2LwQ/exec";
+      const select = document.getElementById("unitSelect");
+      const resultContainer = document.getElementById("resultContainer");
+      const resetBtn = document.getElementById("resetBtn");
 
-    fetch(jsonUrl)
-      .then(res => res.json())
-      .then(json => {
-        document.getElementById("sheetTitle").textContent = json.title;
-        const rows = json.data;
-        const unitKey = "Unit";
+      try {
+        const res = await fetch(sheetUrl);
+        const data = await res.json();
 
-        const unitSelect = document.getElementById("unitSelect");
-        const resultContainer = document.getElementById("resultContainer");
-        const resetBtn = document.getElementById("resetBtn");
-        const selectContainer = document.getElementById("selectContainer");
+        const unitNumbers = [...new Set(data.map(item => item.unit))];
+        unitNumbers.forEach(unit => {
+          const option = document.createElement("option");
+          option.value = unit;
+          option.textContent = unit;
+          select.appendChild(option);
+        });
 
-        const ts = new TomSelect(unitSelect, {
-          placeholder: 'اختر رقم الوحدة...',
-          options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-          onChange: (value) => {
-            resultContainer.innerHTML = "";
-            const matchedRow = rows.find(row => row[unitKey] === value);
-            if (matchedRow) {
-              const unitP = document.createElement("p");
-              unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
-              unitP.className = "unit-number";
-              resultContainer.appendChild(unitP);
+        document.getElementById("loading").style.display = "none";
 
-              const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-              displayKeys.forEach(key => {
-                const p = document.createElement("p");
-                p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
-                resultContainer.appendChild(p);
-              });
-
-              ts.disable();
-              selectContainer.style.display = "none";
-              resetBtn.style.display = "inline-block";
-            } else {
-              const p = document.createElement("p");
-              p.textContent = "لم يتم العثور على البيانات.";
-              p.className = "no-data";
-              resultContainer.appendChild(p);
-            }
+        select.addEventListener("change", () => {
+          const selectedUnit = select.value;
+          const result = data.find(item => item.unit === selectedUnit);
+          if (result) {
+            resultContainer.innerHTML = `<p><strong>${result.unit}</strong>: ${result.note}</p>`;
+            resetBtn.style.display = "block";
+            select.style.display = "none";
           }
         });
 
         resetBtn.addEventListener("click", () => {
-          ts.clear();
-          ts.enable();
-          selectContainer.style.display = "block";
           resultContainer.innerHTML = "";
+          select.value = "";
+          select.style.display = "block";
           resetBtn.style.display = "none";
         });
-      })
-      .catch(error => {
-        document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات";
-        console.error("Error fetching data:", error);
-      });
-  }
-</script>
 
+      } catch (error) {
+        document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات";
+        console.error(error);
+      }
+    }
+  </script>
 </body>
 </html>
