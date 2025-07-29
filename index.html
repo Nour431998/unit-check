@@ -1,48 +1,93 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>البحث برقم الوحدة</title>
-<style>
-  body { font-family: Arial; padding: 20px; direction: rtl; background: #fafafa; }
-  input, button { padding: 10px 15px; margin: 5px; font-size: 17px; }
-  button { cursor: pointer; }
-  #result { margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-</style>
+  <meta charset="UTF-8" />
+  <title>عرض بيانات الوحدات</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+      margin-bottom: 20px;
+      direction: rtl;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: #fff;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #eee;
+    }
+  </style>
 </head>
 <body>
 
-<h2>البحث عن بيانات الوحدة</h2>
-<input type="text" id="unitInput" placeholder="اكتب رقم الوحدة">
-<button onclick="searchUnit()">بحث</button>
+<h2>بحث برقم الوحدة</h2>
+<input type="text" id="searchInput" placeholder="أدخل رقم الوحدة" onkeyup="filterTable()">
 
-<div id="result">النتيجة ستظهر هنا...</div>
+<table id="dataTable">
+  <thead>
+    <tr id="headerRow"></tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
 
 <script>
-  async function fetchData() {
-    const resp = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9‑Hq6mM4dy5diESIIPwt1b6/pub?output=csv");
-    const txt = await resp.text();
-    const rows = txt.trim().split('\n').map(r => r.split(','));
-    return rows;
-  }
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv";
 
-  async function searchUnit() {
-    const unit = document.getElementById("unitInput").value.trim();
-    const rows = await fetchData();
-    const headers = rows[0];
-    const found = rows.find((r,i) => i>0 && r[0] === unit);
-    const out = document.getElementById("result");
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(data => {
+      const rows = data.trim().split('\n').map(row => row.split(','));
+      const headerRow = document.getElementById('headerRow');
+      const tableBody = document.getElementById('tableBody');
 
-    if (found) {
-      let html = "<h3>بيانات الوحدة:</h3><ul>";
-      headers.forEach((h, i) => {
-        html += `<li><strong>${h}:</strong> ${found[i] || ""}</li>`;
+      // بناء رؤوس الجدول
+      rows[0].forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
       });
-      html += "</ul>";
-      out.innerHTML = html;
-    } else {
-      out.textContent = "لم يتم العثور على بيانات لهذه الوحدة.";
-    }
+
+      // بناء بيانات الصفوف
+      for (let i = 1; i < rows.length; i++) {
+        const tr = document.createElement('tr');
+        rows[i].forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      }
+    });
+
+  function filterTable() {
+    const input = document.getElementById("searchInput").value.toUpperCase();
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+      const cell = row.cells[0]; // يفترض أن "رقم الوحدة" هو العمود الأول
+      if (cell && cell.textContent.toUpperCase().includes(input)) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
   }
 </script>
 
