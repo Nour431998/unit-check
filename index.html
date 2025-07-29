@@ -4,70 +4,133 @@
   <meta charset="UTF-8">
   <title>AMWAJ MAINTENANCE DIFFERENCE</title>
   <style>
-    body { font-family: Arial; direction: rtl; text-align: right; padding: 20px; background: #f9f9f9; }
-    input { padding: 10px; width: 300px; margin-bottom: 20px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
-    .result p { background: #e8f0fe; padding: 10px; border-radius: 6px; margin: 5px 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      text-align: right;
+      background: #f2f4f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 16px;
+      border: 1px solid #dcdfe3;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    .result {
+      margin-top: 20px;
+    }
+
+    .result p {
+      background: #e9f5ff;
+      color: #34495e;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin: 8px 0;
+      border-right: 4px solid #3498db;
+    }
+
+    .no-data {
+      color: red;
+      font-weight: bold;
+      background: #fff1f1;
+      border: 1px solid #ffcfcf;
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
 
-<h2>ابحث برقم الوحدة</h2>
+  <div class="container">
+    <h2>ابحث برقم الوحدة</h2>
 
-<input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
-<datalist id="units"></datalist>
+    <input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
+    <datalist id="units"></datalist>
 
-<div class="result" id="resultContainer"></div>
+    <div class="result" id="resultContainer"></div>
+  </div>
 
-<script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
+  <script>
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
 
-  fetch(csvUrl)
-    .then(response => response.text())
-    .then(data => {
-      const allRows = data.trim().split('\n').map(row => row.split(','));
+    fetch(csvUrl)
+      .then(response => response.text())
+      .then(data => {
+        const allRows = data.trim().split('\n').map(row => row.split(','));
 
-      const headers = allRows[1]; // الصف الثاني = رؤوس الأعمدة
-      const rows = allRows.slice(2).filter(row => row[0]); // تجاهل الصفوف الفارغة
+        const headers = allRows[1]; // رؤوس الأعمدة من الصف الثاني
+        const rows = allRows.slice(2).filter(row => row[0]); // تجاهل الصفوف الفارغة
 
-      const unitInput = document.getElementById("unitInput");
-      const unitList = document.getElementById("units");
-      const resultContainer = document.getElementById("resultContainer");
+        const unitInput = document.getElementById("unitInput");
+        const unitList = document.getElementById("units");
+        const resultContainer = document.getElementById("resultContainer");
 
-      // ملء datalist بدون تكرار
-      const seen = new Set();
-      rows.forEach(row => {
-        const unit = row[0].trim();
-        if (unit && !seen.has(unit)) {
-          seen.add(unit);
-          const option = document.createElement("option");
-          option.value = unit;
-          unitList.appendChild(option);
-        }
+        const seen = new Set();
+        rows.forEach(row => {
+          const unit = row[0].trim();
+          if (unit && !seen.has(unit)) {
+            seen.add(unit);
+            const option = document.createElement("option");
+            option.value = unit;
+            unitList.appendChild(option);
+          }
+        });
+
+        unitInput.addEventListener("input", () => {
+          const unitValue = unitInput.value.trim();
+          const matchedRow = rows.find(row => row[0].trim() === unitValue);
+
+          resultContainer.innerHTML = "";
+
+          if (matchedRow) {
+            const fields = [1, 2, 3, 4];
+            fields.forEach(i => {
+              const p = document.createElement("p");
+              p.textContent = `${headers[i]}: ${matchedRow[i] || ""}`;
+              resultContainer.appendChild(p);
+            });
+          } else {
+            resultContainer.innerHTML = "<div class='no-data'>لم يتم العثور على البيانات.</div>";
+          }
+        });
+      })
+      .catch(err => {
+        console.error("حدث خطأ في تحميل البيانات:", err);
       });
-
-      // عند اختيار/كتابة رقم الوحدة
-      unitInput.addEventListener("input", () => {
-        const unitValue = unitInput.value.trim();
-        const matchedRow = rows.find(row => row[0].trim() === unitValue);
-
-        resultContainer.innerHTML = "";
-
-        if (matchedRow) {
-          const fields = [1, 2, 3, 4];
-          fields.forEach(i => {
-            const p = document.createElement("p");
-            p.textContent = `${headers[i]}: ${matchedRow[i] || ""}`;
-            resultContainer.appendChild(p);
-          });
-        } else {
-          resultContainer.innerHTML = "<p style='color:red;'>لم يتم العثور على البيانات.</p>";
-        }
-      });
-    })
-    .catch(err => {
-      console.error("حدث خطأ في تحميل البيانات:", err);
-    });
-</script>
+  </script>
 
 </body>
 </html>
