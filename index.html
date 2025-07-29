@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver0.3</title>
+  <title>AMWAJ 2025 Ver0.9</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tom Select -->
@@ -18,8 +18,8 @@
       direction: rtl;
     }
 
-    .container {
-      max-width: 600px;
+    .container, .logo-bar-container {
+      max-width: 800px;
       margin: 5vh auto;
       background: white;
       padding: 30px;
@@ -33,16 +33,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
-      background-color: white;
+      flex-wrap: nowrap;
     }
 
-    .logo-bar img:first-child {
-      max-height: 50px;
-    }
-
-    .logo-bar img:last-child {
-      max-height: 65px;
+    .logo-bar img {
+      width: 48%;
+      height: auto;
+      object-fit: contain;
     }
 
     h2 {
@@ -103,14 +100,19 @@
     }
 
     @media (max-width: 600px) {
-      .container {
+      .container, .logo-bar-container {
         margin: 2vh 10px;
         padding: 20px;
       }
 
       .logo-bar {
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: center;
         gap: 10px;
+      }
+
+      .logo-bar img {
+        width: 45%;
       }
     }
 
@@ -129,9 +131,11 @@
 </head>
 <body>
 
-<div class="logo-bar">
-  <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
-  <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+<div class="logo-bar-container">
+  <div class="logo-bar">
+    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
+    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+  </div>
 </div>
 
 <div class="container">
