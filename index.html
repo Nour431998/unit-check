@@ -92,7 +92,7 @@
 
   <div class="result" id="resultContainer"></div>
 
-  <button id="resetBtn" style="display:none;">بحث عن وحدة جديدة</button>
+  <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
 </div>
 
 <script>
@@ -102,9 +102,9 @@
     .then(response => response.text())
     .then(data => {
       const allRows = data.trim().split('\n').map(row => row.split(','));
-      const sheetTitle = allRows[0][0]; // الصف الأول بالكامل
-      const headers = allRows[1]; // رؤوس الأعمدة من الصف الثاني
-      const rows = allRows.slice(2); // البيانات من الصف الثالث
+      const sheetTitle = allRows[0][0]; // الصف الأول كعنوان
+      const headers = allRows[1];       // رؤوس الأعمدة
+      const rows = allRows.slice(2);    // البيانات
 
       document.getElementById("sheetTitle").textContent = sheetTitle;
 
@@ -112,50 +112,43 @@
       const resultContainer = document.getElementById("resultContainer");
       const resetBtn = document.getElementById("resetBtn");
 
-      // تعبئة القائمة المنسدلة
-      rows.forEach(row => {
-        if (row[0]) {
-          const option = document.createElement("option");
-          option.value = row[0].trim();
-          option.textContent = row[0].trim();
-          unitSelect.appendChild(option);
-        }
-      });
-
-      // تفعيل Tom Select
-      const select = new TomSelect(unitSelect, {
-        placeholder: 'اكتب أو اختر رقم الوحدة...',
-        allowEmptyOption: true,
-        onChange: function(value) {
+      // إعداد Tom Select
+      const ts = new TomSelect(unitSelect, {
+        placeholder: 'اختر رقم الوحدة...',
+        options: rows.map(row => ({ value: row[0], text: row[0] })),
+        onChange: (value) => {
           resultContainer.innerHTML = "";
 
-          const matchedRow = rows.find(row => row[0]?.trim() === value);
-
+          const matchedRow = rows.find(row => row[0] === value);
           if (matchedRow) {
-            const fields = [1, 2, 3, 4];
-            fields.forEach(i => {
+            [1, 2, 3, 4].forEach(i => {
               const p = document.createElement("p");
-              p.textContent = `${headers[i]}: ${matchedRow[i] || "لا يوجد"}`;
+              p.textContent = `${headers[i]}: ${matchedRow[i]}`;
               resultContainer.appendChild(p);
             });
+
+            // تعطيل الحقل بعد الاختيار
+            ts.disable();
             resetBtn.style.display = "inline-block";
           } else {
-            resultContainer.innerHTML = "<p class='no-data'>لم يتم العثور على البيانات.</p>";
-            resetBtn.style.display = "inline-block";
+            const p = document.createElement("p");
+            p.textContent = "لم يتم العثور على البيانات.";
+            p.className = "no-data";
+            resultContainer.appendChild(p);
           }
         }
       });
 
-      // زر إعادة البحث
       resetBtn.addEventListener("click", () => {
-        select.clear();
+        ts.clear();
+        ts.enable();
         resultContainer.innerHTML = "";
         resetBtn.style.display = "none";
       });
     })
     .catch(err => {
-      console.error("فشل تحميل البيانات:", err);
       document.getElementById("sheetTitle").textContent = "حدث خطأ أثناء تحميل البيانات.";
+      console.error("خطأ:", err);
     });
 </script>
 
