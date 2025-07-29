@@ -4,28 +4,31 @@
   <meta charset="UTF-8">
   <title>AMWAJ MAINTENANCE DIFFERENCE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tom Select CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       direction: rtl;
       text-align: right;
       padding: 20px;
-      background-color: #f9f9f9;
-      color: #333;
+      background-color: #f2f2f2;
     }
 
     h1, h2, h3 {
       color: #2c3e50;
     }
 
-    input, datalist, button {
+    select, button {
       width: 100%;
       max-width: 400px;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
+      font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 16px;
       box-sizing: border-box;
     }
 
@@ -40,15 +43,11 @@
       background-color: #2980b9;
     }
 
-    .result {
-      margin-top: 20px;
-    }
-
     .result p {
       background: #ecf0f1;
-      padding: 12px;
+      padding: 10px;
+      margin: 8px 0;
       border-radius: 6px;
-      margin-bottom: 8px;
     }
 
     .no-data {
@@ -62,12 +61,15 @@
   <h3 id="sheetTitle">جارٍ التحميل...</h3>
 
   <h2>ابحث برقم الوحدة</h2>
-  <input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
-  <datalist id="units"></datalist>
+  <select id="unitSelect" placeholder="اختر رقم الوحدة...">
+    <option value="">اختر رقم الوحدة</option>
+  </select>
 
   <div class="result" id="resultContainer"></div>
-
   <button id="resetBtn" style="display: none;">بحث عن وحدة جديدة</button>
+
+  <!-- Tom Select JS -->
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
   <script>
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
@@ -76,29 +78,36 @@
       .then(response => response.text())
       .then(data => {
         const allRows = data.trim().split('\n').map(row => row.split(','));
-
-        // الصف الأول هو عنوان الشيت
         const sheetTitle = allRows[0][0];
         document.getElementById("sheetTitle").textContent = sheetTitle;
 
         const headers = allRows[1];
         const rows = allRows.slice(2);
 
-        const unitInput = document.getElementById("unitInput");
-        const unitList = document.getElementById("units");
+        const unitSelect = document.getElementById("unitSelect");
         const resultContainer = document.getElementById("resultContainer");
         const resetBtn = document.getElementById("resetBtn");
 
-        // إعداد القائمة المنسدلة
         rows.forEach(row => {
           const option = document.createElement("option");
           option.value = row[0];
-          unitList.appendChild(option);
+          option.textContent = row[0];
+          unitSelect.appendChild(option);
         });
 
-        unitInput.addEventListener("input", () => {
-          const unitValue = unitInput.value.trim();
-          const matchedRow = rows.find(row => row[0]?.trim() === unitValue);
+        // Initialize Tom Select
+        new TomSelect("#unitSelect", {
+          placeholder: "اختر رقم الوحدة...",
+          create: false,
+          maxItems: 1,
+          allowEmptyOption: true,
+          persist: false,
+          selectOnTab: true
+        });
+
+        unitSelect.addEventListener("change", () => {
+          const selectedValue = unitSelect.value;
+          const matchedRow = rows.find(row => row[0]?.trim() === selectedValue);
           resultContainer.innerHTML = "";
 
           if (matchedRow) {
@@ -115,16 +124,14 @@
           }
         });
 
-        // إعادة البحث
         resetBtn.addEventListener("click", () => {
-          unitInput.value = "";
+          unitSelect.tomselect.clear(); // reset Tom Select
           resultContainer.innerHTML = "";
           resetBtn.style.display = "none";
-          unitInput.focus();
         });
       })
-      .catch(err => {
-        console.error("حدث خطأ في تحميل البيانات:", err);
+      .catch(error => {
+        console.error("حدث خطأ:", error);
         document.getElementById("sheetTitle").textContent = "تعذر تحميل البيانات.";
       });
   </script>
