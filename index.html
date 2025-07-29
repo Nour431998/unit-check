@@ -6,7 +6,7 @@
   <title>AMWAJ MAINTENANCE DIFFERENCE</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Cairo', sans-serif;
       direction: rtl;
       background-color: #f0f2f5;
       margin: 0;
@@ -84,7 +84,7 @@
 <body>
 
   <div class="container">
-    <h2>ابحث برقم الوحدة</h2>
+    <h2>AMWAJ MAINTENANCE DIFFERENCE</h2>
 
     <input list="units" id="unitInput" placeholder="اكتب أو اختر رقم الوحدة">
     <datalist id="units"></datalist>
@@ -93,25 +93,25 @@
   </div>
 
   <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?output=csv";
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv";
 
     fetch(csvUrl)
       .then(response => response.text())
       .then(data => {
         const allRows = data.trim().split('\n').map(row => row.split(','));
-
-        const headers = allRows[1]; // رؤوس الأعمدة من الصف الثاني
-        const rows = allRows.slice(2).filter(row => row[0]);
+        const headers = allRows[1]; // الصف الثاني فيه رؤوس الأعمدة
+        const rows = allRows.slice(2); // البيانات من الصف الثالث
 
         const unitInput = document.getElementById("unitInput");
         const unitList = document.getElementById("units");
         const resultContainer = document.getElementById("resultContainer");
 
-        const seen = new Set();
+        // تعبئة القائمة المنسدلة
+        const seenUnits = new Set();
         rows.forEach(row => {
-          const unit = row[0].trim();
-          if (unit && !seen.has(unit)) {
-            seen.add(unit);
+          const unit = row[0]?.trim();
+          if (unit && !seenUnits.has(unit)) {
+            seenUnits.add(unit);
             const option = document.createElement("option");
             option.value = unit;
             unitList.appendChild(option);
@@ -120,11 +120,11 @@
 
         unitInput.addEventListener("input", () => {
           const unitValue = unitInput.value.trim();
-          const matchedRow = rows.find(row => row[0].trim() === unitValue);
+          const matchedRow = rows.find(row => row[0]?.trim() === unitValue);
           resultContainer.innerHTML = "";
 
           if (matchedRow) {
-            const fields = [1, 2, 3, 4];
+            const fields = [1, 2, 3, 4]; // الأعمدة المطلوبة
             fields.forEach(i => {
               const p = document.createElement("p");
               p.textContent = `${headers[i]}: ${matchedRow[i] || "لا يوجد"}`;
