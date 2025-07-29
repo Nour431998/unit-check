@@ -115,6 +115,7 @@
 
       const rows = json.data;
       const headers = Object.keys(rows[0]);
+      const unitKey = "Unit"; // ← عمود رقم الوحدة
 
       const unitSelect = document.getElementById("unitSelect");
       const resultContainer = document.getElementById("resultContainer");
@@ -122,17 +123,18 @@
 
       const ts = new TomSelect(unitSelect, {
         placeholder: 'اختر رقم الوحدة...',
-        options: rows.map(row => ({ value: row[headers[0]], text: row[headers[0]] })),
+        options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
         onChange: (value) => {
           resultContainer.innerHTML = "";
 
-          const matchedRow = rows.find(row => row[headers[0]] === value);
+          const matchedRow = rows.find(row => row[unitKey] === value);
           if (matchedRow) {
-            for (let i = 1; i <= 4; i++) {
+            const displayKeys = ["status", "2023", "2024", "ملاحظات"];
+            displayKeys.forEach(key => {
               const p = document.createElement("p");
-              p.textContent = `${headers[i]}: ${matchedRow[headers[i]]}`;
+              p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
               resultContainer.appendChild(p);
-            }
+            });
 
             ts.disable();
             resetBtn.style.display = "inline-block";
