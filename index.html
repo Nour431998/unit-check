@@ -37,6 +37,18 @@
     .suggestion:hover {
       background-color: #eee;
     }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #999;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -45,7 +57,7 @@
     <input type="text" id="unitInput" placeholder="اكتب رقم الوحدة هنا">
     <div id="suggestions"></div>
   </div>
-  <div id="result" style="margin-top: 20px;"></div>
+  <div id="result" style="margin-top: 30px;"></div>
 
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRQ-2rfpVKsouOZUzwbzViyos6H5lezDoSdVMsXfdupIcaUVM6GiS9cb9-Hq6mM4dy5diESIIPwt1b6/pub?gid=612505877&single=true&output=csv';
@@ -53,12 +65,14 @@
     const suggestions = document.getElementById('suggestions');
     const resultDiv = document.getElementById('result');
     let rows = [];
+    let headers = [];
 
     fetch(csvUrl)
       .then(res => res.text())
       .then(data => {
-        rows = data.trim().split('\n').map(r => r.split(','));
-        rows.shift(); // Remove headers
+        const allRows = data.trim().split('\n').map(r => r.split(','));
+        headers = allRows[0]; // الصف الأول يحتوي على العناوين
+        rows = allRows.slice(1); // بقية الصفوف هي البيانات
       });
 
     input.addEventListener('input', () => {
@@ -74,7 +88,7 @@
         div.addEventListener('click', () => {
           input.value = row[0];
           suggestions.innerHTML = '';
-          resultDiv.innerHTML = `<p><strong>النتيجة:</strong> ${row[1]}</p>`;
+          showResult(row);
         });
         suggestions.appendChild(div);
       });
@@ -84,7 +98,26 @@
       }
     });
 
-    // إغلاق القائمة عند النقر خارجها
+    function showResult(row) {
+      const html = `
+        <table>
+          <tr>
+            <th>${headers[1]}</th>
+            <th>${headers[2]}</th>
+            <th>${headers[3]}</th>
+            <th>${headers[4]}</th>
+          </tr>
+          <tr>
+            <td>${row[1] || ''}</td>
+            <td>${row[2] || ''}</td>
+            <td>${row[3] || ''}</td>
+            <td>${row[4] || ''}</td>
+          </tr>
+        </table>
+      `;
+      resultDiv.innerHTML = html;
+    }
+
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.dropdown')) {
         suggestions.innerHTML = '';
