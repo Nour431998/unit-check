@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
@@ -156,17 +157,6 @@
 </div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBHFt0nYl_Sd7C4YJctTA5yRF3T0EAR5J8",
-    authDomain: "unit-check-684a5.firebaseapp.com",
-    projectId: "unit-check-684a5",
-    storageBucket: "unit-check-684a5.appspot.com",
-    messagingSenderId: "963222945184",
-    appId: "1:963222945184:web:fe8f5aa1793228157fb8c5"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-
   function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
