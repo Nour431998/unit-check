@@ -1,0 +1,9 @@
+// firebase-config.js
+const firebaseConfig = {
+  apiKey: "AIzaSyBbqIcYOl_S8vOOK_Nxdf2FQbETE1pdSWw", // ← استبدله بالمفتاح الجديد بعد تقييده
+  authDomain: "unit-check-684a5.firebaseapp.com",
+  projectId: "unit-check-684a5",
+  storageBucket: "unit-check-684a5.appspot.com",
+  messagingSenderId: "963222945184",
+  appId: "1:963222945184:web:fe8f5aa1793228157fb8c5"
+};
