@@ -132,6 +132,7 @@
   <h2>تسجيل الدخول</h2>
   <input type="email" id="email" placeholder="البريد الإلكتروني" style="max-width:300px; width:100%; padding:10px; margin-bottom:10px; text-align:center;">
 <input type="password" id="password" placeholder="كلمة المرور" style="max-width:300px; width:100%; padding:10px; margin-bottom:10px; text-align:center;">
+<p><a href="#" onclick="resetPassword()" style="color:#007bff; text-decoration:underline;">هل نسيت كلمة السر؟</a></p>
   <button onclick="login()" style="max-width:300px; width:100%;">دخول</button>
   <p id="auth-error" style="color: red;"></p>
 </div>
@@ -240,6 +241,24 @@
         console.error("Error fetching data:", error);
       });
   }
+  function resetPassword() {
+  const email = document.getElementById("email").value;
+  if (!email) {
+    document.getElementById("auth-error").textContent = "من فضلك أدخل البريد الإلكتروني أولاً.";
+    return;
+  }
+
+  firebase.auth().sendPasswordResetEmail(email)
+    .then(() => {
+      document.getElementById("auth-error").style.color = "green";
+      document.getElementById("auth-error").textContent = "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك.";
+    })
+    .catch(error => {
+      document.getElementById("auth-error").style.color = "red";
+      document.getElementById("auth-error").textContent = "خطأ: " + error.message;
+    });
+}
+
 </script>
 
 </body>
