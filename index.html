@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>AMWAJ 2025 Ver1.4</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>AMWAJ 2025 Ver1.5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -88,6 +88,8 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
+      max-width: 300px;
+      width: 100%;
     }
     button:hover {
       background-color: #0056b3;
@@ -124,24 +126,52 @@
         max-width: 58%;
       }
     }
+    /* توسيط خانات الدخول */
+    #auth-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    #auth-container input {
+      max-width: 300px;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+    }
+    #auth-container button {
+      max-width: 300px;
+      width: 100%;
+    }
+    #auth-container p a {
+      color: #007bff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-<div id="auth-container" class="container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;">
+<div id="auth-container" class="container">
   <h2>تسجيل الدخول</h2>
-  <input type="email" id="email" placeholder="البريد الإلكتروني" style="max-width:300px; width:100%; padding:10px; margin-bottom:10px; text-align:center;">
-<input type="password" id="password" placeholder="كلمة المرور" style="max-width:300px; width:100%; padding:10px; margin-bottom:10px; text-align:center;">
-<p><a href="#" onclick="resetPassword()" style="color:#007bff; text-decoration:underline;">هل نسيت كلمة السر؟</a></p>
-  <button onclick="login()" style="max-width:300px; width:100%;">دخول</button>
+  <input type="email" id="email" placeholder="البريد الإلكتروني" />
+  <input type="password" id="password" placeholder="كلمة المرور" />
+  <p><a onclick="resetPassword()">هل نسيت كلمة السر؟</a></p>
+  <button onclick="login()">دخول</button>
   <p id="auth-error" style="color: red;"></p>
 </div>
 
 <div id="main-container" style="display: none;">
   <div class="container">
     <div class="logo-bar">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo">
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo" />
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo" />
     </div>
 
     <h2>MAINTENANCE DIFFERENCE 2025</h2>
@@ -168,25 +198,93 @@
 
   firebase.initializeApp(firebaseConfig);
 
+  // تسجيل الدخول مع حفظ الجلسة ساعتين
   function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    firebase.auth().signInWithEmailAndPassword(email, password)
+
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
       .then(() => {
+        return firebase.auth().signInWithEmailAndPassword(email, password);
+      })
+      .then(() => {
+        localStorage.setItem("loginTimestamp", Date.now());
+        document.getElementById("auth-error").textContent = "";
         document.getElementById("auth-container").style.display = "none";
         document.getElementById("main-container").style.display = "block";
         loadData();
+        checkSessionTimeout();
       })
       .catch(error => {
+        document.getElementById("auth-error").style.color = "red";
         document.getElementById("auth-error").textContent = "فشل تسجيل الدخول: " + error.message;
       });
   }
-  document.getElementById("password").addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    login();
-  }
-});
 
+  // إعادة تعيين كلمة السر
+  function resetPassword() {
+    const email = document.getElementById("email").value;
+    if (!email) {
+      document.getElementById("auth-error").style.color = "red";
+      document.getElementById("auth-error").textContent = "من فضلك أدخل البريد الإلكتروني أولاً.";
+      return;
+    }
+
+    firebase.auth().sendPasswordResetEmail(email)
+      .then(() => {
+        document.getElementById("auth-error").style.color = "green";
+        document.getElementById("auth-error").textContent = "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك.";
+      })
+      .catch(error => {
+        document.getElementById("auth-error").style.color = "red";
+        document.getElementById("auth-error").textContent = "خطأ: " + error.message;
+      });
+  }
+
+  // مراقبة انتهاء الجلسة بعد ساعتين
+  function checkSessionTimeout() {
+    const TWO_HOURS = 2 * 60 * 60 * 1000; // ساعتين بالميلي ثانية
+
+    function logoutIfExpired() {
+      const loginTimestamp = localStorage.getItem("loginTimestamp");
+      if (loginTimestamp) {
+        const elapsed = Date.now() - loginTimestamp;
+        if (elapsed > TWO_HOURS) {
+          firebase.auth().signOut().then(() => {
+            alert("انتهت مدة الجلسة، الرجاء تسجيل الدخول مرة أخرى.");
+            localStorage.removeItem("loginTimestamp");
+            location.reload();
+          });
+        } else {
+          setTimeout(logoutIfExpired, TWO_HOURS - elapsed);
+        }
+      }
+    }
+
+    logoutIfExpired();
+  }
+
+  // عند تحميل الصفحة، تحقق حالة تسجيل الدخول
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      checkSessionTimeout();
+      document.getElementById("auth-container").style.display = "none";
+      document.getElementById("main-container").style.display = "block";
+      loadData();
+    } else {
+      document.getElementById("auth-container").style.display = "flex";
+      document.getElementById("main-container").style.display = "none";
+    }
+  });
+
+  // تفعيل دخول بالضغط على Enter في كلمة المرور
+  document.getElementById("password").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      login();
+    }
+  });
+
+  // تحميل بيانات Google Sheets وعرضها
   function loadData() {
     const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
 
@@ -246,24 +344,6 @@
         console.error("Error fetching data:", error);
       });
   }
-  function resetPassword() {
-  const email = document.getElementById("email").value;
-  if (!email) {
-    document.getElementById("auth-error").textContent = "من فضلك أدخل البريد الإلكتروني أولاً.";
-    return;
-  }
-
-  firebase.auth().sendPasswordResetEmail(email)
-    .then(() => {
-      document.getElementById("auth-error").style.color = "green";
-      document.getElementById("auth-error").textContent = "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك.";
-    })
-    .catch(error => {
-      document.getElementById("auth-error").style.color = "red";
-      document.getElementById("auth-error").textContent = "خطأ: " + error.message;
-    });
-}
-
 </script>
 
 </body>
