@@ -316,36 +316,43 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-        const ts = new TomSelect(unitSelect, {
-          placeholder: 'اختر رقم الوحدة...',
-          options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-          onChange: (value) => {
-            resultContainer.innerHTML = "";
-            const matchedRow = rows.find(row => row[unitKey] === value);
-            if (matchedRow) {
-              const unitP = document.createElement("p");
-              unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
-              unitP.className = "unit-number";
-              resultContainer.appendChild(unitP);
+// 🛠️ تأكد من تدمير TomSelect السابق (لو موجود)
+if (unitSelect.tomselect) {
+  unitSelect.tomselect.destroy();
+}
 
-              const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-              displayKeys.forEach(key => {
-                const p = document.createElement("p");
-                p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
-                resultContainer.appendChild(p);
-              });
+// ✅ تهيئة TomSelect من جديد
+const ts = new TomSelect(unitSelect, {
+  placeholder: 'اختر رقم الوحدة...',
+  options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
+  onChange: (value) => {
+    resultContainer.innerHTML = "";
+    const matchedRow = rows.find(row => row[unitKey] === value);
+    if (matchedRow) {
+      const unitP = document.createElement("p");
+      unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
+      unitP.className = "unit-number";
+      resultContainer.appendChild(unitP);
 
-              ts.disable();
-              selectContainer.style.display = "none";
-              resetBtn.style.display = "inline-block";
-            } else {
-              const p = document.createElement("p");
-              p.textContent = "لم يتم العثور على البيانات.";
-              p.className = "no-data";
-              resultContainer.appendChild(p);
-            }
-          }
-        });
+      const displayKeys = ["status", "2023", "2024", "ملاحظات"];
+      displayKeys.forEach(key => {
+        const p = document.createElement("p");
+        p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
+        resultContainer.appendChild(p);
+      });
+
+      ts.disable();
+      selectContainer.style.display = "none";
+      resetBtn.style.display = "inline-block";
+    } else {
+      const p = document.createElement("p");
+      p.textContent = "لم يتم العثور على البيانات.";
+      p.className = "no-data";
+      resultContainer.appendChild(p);
+    }
+  }
+});
+
 
         resetBtn.addEventListener("click", () => {
           ts.clear();
@@ -377,3 +384,4 @@
 
 </body>
 </html>
+
