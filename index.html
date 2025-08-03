@@ -188,6 +188,7 @@
 
     <div class="result" id="resultContainer"></div>
     <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
+    <button onclick="logout()" style="background-color: #dc3545; margin-top: 30px;">🚪 تسجيل الخروج</button>
   </div>
 </div>
 
@@ -349,8 +350,22 @@
         console.error("Error fetching data:", error);
       });
   }
+  function logout() {
+  firebase.auth().signOut().then(() => {
+    localStorage.removeItem("loginTimestamp");
+    // تنظيف أي بيانات مخزنة أخرى في localStorage أو sessionStorage لو كنت تستخدمها
+    localStorage.clear();
+    sessionStorage.clear();
+    location.reload(); // إعادة تحميل الصفحة لإظهار صفحة تسجيل الدخول
+  }).catch((error) => {
+    console.error("خطأ في تسجيل الخروج:", error);
+    alert("حدث خطأ أثناء تسجيل الخروج.");
+  });
+}
+
 </script>
 
 </body>
 </html>
+
 
