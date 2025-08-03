@@ -355,11 +355,12 @@
           resetBtn.style.display = "none";
         });
       })
-      .catch(error => {
-        document.getElementById("sheetTitle").textContent = "برجاء إعادة تحميل للصفحة للحصول على بيانات محدثة";
-        console.error("Error fetching data:", error);
-      });
+    .catch(error => {
+  const currentTitle = document.getElementById("sheetTitle").textContent;
+  if (currentTitle.includes("تحميل")) {
+    document.getElementById("sheetTitle").textContent = "⚠️ حدث خطأ أثناء تحميل البيانات، يرجى المحاولة مرة أخرى.";
   }
+});
   function logout() {
   firebase.auth().signOut().then(() => {
     localStorage.removeItem("loginTimestamp");
@@ -377,6 +378,7 @@
 
 </body>
 </html>
+
 
 
 
