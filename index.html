@@ -214,7 +214,7 @@
 
   firebase.initializeApp(firebaseConfig);
 
-  // تسجيل الدخول مع حفظ الجلسة ساعتين
+  // تسجيل الدخول
   function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -237,42 +237,40 @@
       });
   }
 
-  // إعادة تعيين كلمة السر
+  // إعادة تعيين كلمة السر بنافذة منبثقة لكتابة البريد
   function resetPassword() {
-    const email = document.getElementById("email").value;
+    const email = prompt("من فضلك أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور:");
+
     if (!email) {
-      document.getElementById("auth-error").style.color = "red";
-      document.getElementById("auth-error").textContent = "من فضلك أدخل البريد الإلكتروني أولاً.";
+      alert("لم يتم إدخال بريد إلكتروني.");
       return;
     }
 
-    firebase.auth().sendPasswordResetEmail(email)
+    firebase.auth().sendPasswordResetEmail(email.trim())
       .then(() => {
-        document.getElementById("auth-error").style.color = "green";
-        document.getElementById("auth-error").textContent = "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك.";
+        alert("✅ تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.");
       })
       .catch(error => {
-        document.getElementById("auth-error").style.color = "red";
-        document.getElementById("auth-error").textContent = "خطأ: " + error.message;
+        alert("❌ خطأ: " + error.message);
       });
   }
 
-  // مراقبة انتهاء الجلسة بعد ساعتين
+  // مراقبة انتهاء الجلسة بعد 24 ساعة
   function checkSessionTimeout() {
-    const TWO_HOURS = 2 * 60 * 60 * 1000; // ساعتين بالميلي ثانية
+    const ONE_DAY = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
 
     function logoutIfExpired() {
       const loginTimestamp = localStorage.getItem("loginTimestamp");
       if (loginTimestamp) {
         const elapsed = Date.now() - loginTimestamp;
-        if (elapsed > TWO_HOURS) {
+        if (elapsed > ONE_DAY) {
           firebase.auth().signOut().then(() => {
             alert("انتهت مدة الجلسة، الرجاء تسجيل الدخول مرة أخرى.");
             localStorage.removeItem("loginTimestamp");
             location.reload();
           });
         } else {
-          setTimeout(logoutIfExpired, TWO_HOURS - elapsed);
+          setTimeout(logoutIfExpired, ONE_DAY - elapsed);
         }
       }
     }
@@ -283,6 +281,9 @@
   // عند تحميل الصفحة، تحقق حالة تسجيل الدخول
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
+      if (!localStorage.getItem("loginTimestamp")) {
+        localStorage.setItem("loginTimestamp", Date.now());
+      }
       checkSessionTimeout();
       document.getElementById("auth-container").style.display = "none";
       document.getElementById("main-container").style.display = "block";
@@ -316,43 +317,40 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-// 🛠️ تأكد من تدمير TomSelect السابق (لو موجود)
-if (unitSelect.tomselect) {
-  unitSelect.tomselect.destroy();
-}
+        if (unitSelect.tomselect) {
+          unitSelect.tomselect.destroy();
+        }
 
-// ✅ تهيئة TomSelect من جديد
-const ts = new TomSelect(unitSelect, {
-  placeholder: 'اختر رقم الوحدة...',
-  options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-  onChange: (value) => {
-    resultContainer.innerHTML = "";
-    const matchedRow = rows.find(row => row[unitKey] === value);
-    if (matchedRow) {
-      const unitP = document.createElement("p");
-      unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
-      unitP.className = "unit-number";
-      resultContainer.appendChild(unitP);
+        const ts = new TomSelect(unitSelect, {
+          placeholder: 'اختر رقم الوحدة...',
+          options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
+          onChange: (value) => {
+            resultContainer.innerHTML = "";
+            const matchedRow = rows.find(row => row[unitKey] === value);
+            if (matchedRow) {
+              const unitP = document.createElement("p");
+              unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
+              unitP.className = "unit-number";
+              resultContainer.appendChild(unitP);
 
-      const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-      displayKeys.forEach(key => {
-        const p = document.createElement("p");
-        p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
-        resultContainer.appendChild(p);
-      });
+              const displayKeys = ["status", "2023", "2024", "ملاحظات"];
+              displayKeys.forEach(key => {
+                const p = document.createElement("p");
+                p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
+                resultContainer.appendChild(p);
+              });
 
-      ts.disable();
-      selectContainer.style.display = "none";
-      resetBtn.style.display = "inline-block";
-    } else {
-      const p = document.createElement("p");
-      p.textContent = "لم يتم العثور على البيانات.";
-      p.className = "no-data";
-      resultContainer.appendChild(p);
-    }
-  }
-});
-
+              ts.disable();
+              selectContainer.style.display = "none";
+              resetBtn.style.display = "inline-block";
+            } else {
+              const p = document.createElement("p");
+              p.textContent = "لم يتم العثور على البيانات.";
+              p.className = "no-data";
+              resultContainer.appendChild(p);
+            }
+          }
+        });
 
         resetBtn.addEventListener("click", () => {
           ts.clear();
@@ -367,21 +365,27 @@ const ts = new TomSelect(unitSelect, {
         console.error("Error fetching data:", error);
       });
   }
-  function logout() {
-  firebase.auth().signOut().then(() => {
-    localStorage.removeItem("loginTimestamp");
-    // تنظيف أي بيانات مخزنة أخرى في localStorage أو sessionStorage لو كنت تستخدمها
-    localStorage.clear();
-    sessionStorage.clear();
-    location.reload(); // إعادة تحميل الصفحة لإظهار صفحة تسجيل الدخول
-  }).catch((error) => {
-    console.error("خطأ في تسجيل الخروج:", error);
-    alert("حدث خطأ أثناء تسجيل الخروج.");
-  });
-}
 
+  // تسجيل الخروج مع تأكيد
+  function logout() {
+    const confirmLogout = confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟");
+    if (!confirmLogout) {
+      return;
+    }
+
+    firebase.auth().signOut().then(() => {
+      localStorage.removeItem("loginTimestamp");
+      localStorage.clear();
+      sessionStorage.clear();
+      location.reload();
+    }).catch((error) => {
+      console.error("خطأ في تسجيل الخروج:", error);
+      alert("حدث خطأ أثناء تسجيل الخروج.");
+    });
+  }
 </script>
 
 </body>
 </html>
+
 
