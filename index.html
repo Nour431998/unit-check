@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -155,15 +156,14 @@
       cursor: pointer;
     }
     .logo-bar.auth-logos {
-  margin-bottom: 30px;
-  justify-content: space-between;
-}
-
-.logo-bar.auth-logos img {
-  max-height: 60px;
-  max-width: 48%;
-  object-fit: contain;
-}
+      margin-bottom: 30px;
+      justify-content: space-between;
+    }
+    .logo-bar.auth-logos img {
+      max-height: 60px;
+      max-width: 48%;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
@@ -246,218 +246,202 @@
       const loginTimestamp = localStorage.getItem("loginTimestamp");
       if (loginTimestamp) {
         const elapsed = Date.now() - loginTimestamp;
-        if (elapsed > ONE_DAY) {
-          firebase.auth().signOut().then(() => {
-            alert("انتهت مدة الجلسة، الرجاء تسجيل الدخول مرة أخرى.");
-            localStorage.removeItem("loginTimestamp");
-            location.reload();
-          });
-        } else {
-          setTimeout(logoutIfExpired, ONE_DAY - elapsed);
-        }
+        if (elapsed > ONE_DAY) logout();
+        else setTimeout(logoutIfExpired, ONE_DAY - elapsed);
       }
     }
     logoutIfExpired();
   }
 
+  function logout() {
+    firebase.auth().signOut()
+      .then(() => {
+        localStorage.removeItem("loginTimestamp");
+        document.getElementById("main-container").style.display = "none";
+        document.getElementById("auth-container").style.display = "flex";
+      });
+  }
+
+  // تحميل البيانات من ملف JSON الخاص بوحدات المينتنانس
+  async function loadData() {
+    const sheetTitle = document.getElementById("sheetTitle");
+    const unitSelect = document.getElementById("unitSelect");
+    const resultContainer = document.getElementById("resultContainer");
+    const resetBtn = document.getElementById("resetBtn");
+    resetBtn.style.display = "none";
+    resultContainer.innerHTML = "";
+    sheetTitle.innerHTML = '<span id="loading">تحميل البيانات</span>';
+
+    try {
+      // بيانات تجريبية بديلة، يجب استبدال الرابط برابط بياناتك الحقيقية إذا متاحة
+      const response = await fetch("https://raw.githubusercontent.com/Nour431998/unit-check/main/unit_maintenance.json");
+      const data = await response.json();
+
+      // فلترة بيانات الوحدات فقط
+      const units = data.filter(item => item.UnitNo);
+      if (units.length === 0) {
+        sheetTitle.textContent = "لا توجد بيانات للوحدات";
+        return;
+      }
+
+      sheetTitle.textContent = "MAINTENANCE DIFFERENCE 2025";
+
+      // تهيئة قائمة الاختيار
+      unitSelect.innerHTML = '<option value="">اختر رقم الوحدة...</option>';
+      units.forEach(unit => {
+        const option = document.createElement("option");
+        option.value = unit.UnitNo;
+        option.textContent = unit.UnitNo;
+        unitSelect.appendChild(option);
+      });
+
+      // تفعيل مكتبة Tom Select على قائمة الوحدات
+      if (!unitSelect.tomselect) {
+        new TomSelect(unitSelect, { maxItems: 1, placeholder: "اختر رقم الوحدة..." });
+      }
+
+      sheetTitle.innerHTML = "MAINTENANCE DIFFERENCE 2025";
+
+      unitSelect.onchange = () => {
+        const selected = unitSelect.value;
+        if (!selected) {
+          resultContainer.innerHTML = "";
+          resetBtn.style.display = "none";
+          return;
+        }
+
+        // البحث عن الوحدة المحددة
+        const found = units.find(u => u.UnitNo === selected);
+
+        if (!found) {
+          resultContainer.innerHTML = `<p class="no-data">لا توجد بيانات للوحدة المحددة.</p>`;
+          resetBtn.style.display = "inline-block";
+          return;
+        }
+
+        // عرض النتائج
+        let html = `<p class="unit-number">رقم الوحدة: ${found.UnitNo}</p>`;
+        html += `<p>الصيانة الفعلية: <strong>${found.Actual_Maintenance}</strong></p>`;
+        html += `<p>الصيانة المتوقعة: <strong>${found.Expected_Maintenance}</strong></p>`;
+        html += `<p>الفرق: <strong>${found.Difference}</strong></p>`;
+
+        resultContainer.innerHTML = html;
+        resetBtn.style.display = "inline-block";
+      };
+
+      resetBtn.onclick = () => {
+        unitSelect.value = "";
+        if (unitSelect.tomselect) unitSelect.tomselect.clear();
+        resultContainer.innerHTML = "";
+        resetBtn.style.display = "none";
+      };
+
+      // إضافة زر تحميل مدمج (بدون زر logo-bar مستقل)
+      const downloadBtn = document.createElement("button");
+      downloadBtn.textContent = "⬇ تحميل النتيجة كصورة";
+      downloadBtn.style.marginTop = "15px";
+      downloadBtn.style.backgroundColor = "#28a745";
+      downloadBtn.style.maxWidth = "300px";
+      downloadBtn.style.width = "100%";
+
+      downloadBtn.onclick = () => {
+        const mainContainer = document.getElementById("main-container");
+        const logoBar = mainContainer.querySelector(".logo-bar");
+
+        // تأكد أن العناصر موجودة
+        if (!mainContainer || !logoBar) {
+          alert("العنصر main-container أو logo-bar غير موجود.");
+          return;
+        }
+
+        // تحميل الصور أولًا
+        const images = mainContainer.querySelectorAll("img");
+        const imagesLoaded = Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = img.onerror = () => resolve();
+          });
+        });
+
+        Promise.all(imagesLoaded).then(() => {
+          html2canvas(mainContainer, {
+            scale: 5,
+            useCORS: true,
+            backgroundColor: null,
+            scrollX: 0,
+            scrollY: -window.scrollY
+          }).then(canvas => {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const thirdWidth = w / 3;
+            const cropX = thirdWidth;
+
+            const croppedCanvas = document.createElement("canvas");
+            croppedCanvas.width = thirdWidth;
+            croppedCanvas.height = h;
+            const ctx = croppedCanvas.getContext("2d");
+
+            ctx.drawImage(canvas, cropX, 0, thirdWidth, h, 0, 0, thirdWidth, h);
+
+            html2canvas(logoBar, {
+              scale: 5,
+              useCORS: true,
+              backgroundColor: null
+            }).then(logoCanvas => {
+              const finalCanvas = document.createElement("canvas");
+              finalCanvas.width = thirdWidth;
+              finalCanvas.height = logoCanvas.height + croppedCanvas.height;
+              const ctxFinal = finalCanvas.getContext("2d");
+
+              ctxFinal.drawImage(logoCanvas, 0, 0, thirdWidth, logoCanvas.height);
+              ctxFinal.drawImage(croppedCanvas, 0, logoCanvas.height);
+
+              const imgData = finalCanvas.toDataURL("image/png");
+
+              if (navigator.share) {
+                fetch(imgData)
+                  .then(res => res.blob())
+                  .then(blob => {
+                    const file = new File([blob], "result.png", { type: "image/png" });
+                    navigator.share({
+                      files: [file],
+                      title: "نتيجة البحث",
+                      text: "هذه هي النتيجة"
+                    });
+                  });
+              } else {
+                const link = document.createElement("a");
+                link.href = imgData;
+                link.download = "result.png";
+                link.click();
+              }
+            });
+          });
+        });
+      };
+
+      document.querySelector("#main-container .container").appendChild(downloadBtn);
+
+      sheetTitle.innerHTML = "MAINTENANCE DIFFERENCE 2025";
+    } catch (error) {
+      sheetTitle.textContent = "فشل تحميل البيانات";
+      console.error(error);
+    }
+  }
+
+  // تحقق حالة تسجيل الدخول عند فتح الصفحة
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      if (!localStorage.getItem("loginTimestamp")) {
-        localStorage.setItem("loginTimestamp", Date.now());
-      }
-      checkSessionTimeout();
       document.getElementById("auth-container").style.display = "none";
       document.getElementById("main-container").style.display = "block";
       loadData();
+      checkSessionTimeout();
     } else {
       document.getElementById("auth-container").style.display = "flex";
       document.getElementById("main-container").style.display = "none";
     }
   });
-
-  document.getElementById("password").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") login();
-  });
-
-  function loadData() {
-    const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
-
-    fetch(jsonUrl)
-      .then(res => res.json())
-      .then(json => {
-        document.getElementById("sheetTitle").textContent = json.title;
-        const rows = json.data;
-        const unitKey = "Unit";
-
-        const unitSelect = document.getElementById("unitSelect");
-        const resultContainer = document.getElementById("resultContainer");
-        const resetBtn = document.getElementById("resetBtn");
-        const selectContainer = document.getElementById("selectContainer");
-
-        // زر التحميل
-        const downloadBtn = document.createElement("button");
-        downloadBtn.textContent = "📥 تحميل النتيجة";
-        downloadBtn.style.backgroundColor = "#28a745";
-        downloadBtn.style.color = "#fff";
-        downloadBtn.style.margin = "10px";
-        downloadBtn.style.padding = "10px 15px";
-        downloadBtn.style.border = "none";
-        downloadBtn.style.borderRadius = "5px";
-        downloadBtn.style.cursor = "pointer";
-        downloadBtn.style.display = "none";
-        resetBtn.parentNode.insertBefore(downloadBtn, resetBtn);
-
-        if (unitSelect.tomselect) {
-          unitSelect.tomselect.destroy();
-        }
-
-        const ts = new TomSelect(unitSelect, {
-          placeholder: 'اختر رقم الوحدة...',
-          options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-          onChange: (value) => {
-            resultContainer.innerHTML = "";
-            const matchedRow = rows.find(row => row[unitKey] === value);
-            if (matchedRow) {
-              const unitP = document.createElement("p");
-              unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
-              unitP.className = "unit-number";
-              resultContainer.appendChild(unitP);
-
-              const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-              displayKeys.forEach(key => {
-                const p = document.createElement("p");
-                p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
-                resultContainer.appendChild(p);
-              });
-
-              ts.disable();
-              selectContainer.style.display = "none";
-              resetBtn.style.display = "inline-block";
-              downloadBtn.style.display = "inline-block";
-            } else {
-              const p = document.createElement("p");
-              p.textContent = "لم يتم العثور على البيانات.";
-              p.className = "no-data";
-              resultContainer.appendChild(p);
-            }
-          }
-        });
-
-        resetBtn.addEventListener("click", () => {
-          ts.clear();
-          ts.enable();
-          selectContainer.style.display = "block";
-          resultContainer.innerHTML = "";
-          resetBtn.style.display = "none";
-          downloadBtn.style.display = "none";
-        });
-
-        // مكتبة html2canvas
-        const scriptCanvas = document.createElement("script");
-        scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-        document.head.appendChild(scriptCanvas);
-
-        // تصوير ودمج logo-bar مع التلت الأوسط من main-container
-        downloadBtn.addEventListener("click", () => {
-          const container = document.getElementById("main-container");
-          const logoBar = document.getElementById("logo-bar");
-
-          if (!container || !logoBar) {
-            alert("العنصر main-container أو logo-bar غير موجود.");
-            return;
-          }
-
-          Promise.all([
-            html2canvas(logoBar, { scale: 5, useCORS: true, backgroundColor: null }),
-            html2canvas(container, { scale: 5, useCORS: true, backgroundColor: null })
-          ]).then(([logoCanvas, mainCanvas]) => {
-            const mainWidth = mainCanvas.width;
-            const mainHeight = mainCanvas.height;
-
-            const cropWidth = mainWidth / 3;
-            const cropX = cropWidth; // التلت الأوسط
-
-            // قص التلت الأوسط من main-container
-            const croppedMainCanvas = document.createElement("canvas");
-            const ctxMain = croppedMainCanvas.getContext("2d");
-            croppedMainCanvas.width = cropWidth;
-            croppedMainCanvas.height = mainHeight;
-            ctxMain.drawImage(mainCanvas, cropX, 0, cropWidth, mainHeight, 0, 0, cropWidth, mainHeight);
-
-            // كانفاس جديد للجمع بين logo-bar فوق التلت الأوسط
-            const finalCanvas = document.createElement("canvas");
-            const ctxFinal = finalCanvas.getContext("2d");
-
-            // العرض النهائي = عرض التلت الأوسط
-            // الطول النهائي = طول اللوغو + طول التلت الأوسط
-            finalCanvas.width = cropWidth;
-            finalCanvas.height = logoCanvas.height + croppedMainCanvas.height;
-
-            // نرسم اللوغو فوق
-            ctxFinal.drawImage(logoCanvas, 0, 0, cropWidth, logoCanvas.height);
-
-            // نرسم التلت الأوسط تحت اللوغو
-            ctxFinal.drawImage(croppedMainCanvas, 0, logoCanvas.height);
-
-            const imgData = finalCanvas.toDataURL("image/png");
-
-            if (navigator.share) {
-              fetch(imgData)
-                .then(res => res.blob())
-                .then(blob => {
-                  const file = new File([blob], "result.png", { type: "image/png" });
-                  navigator.share({
-                    files: [file],
-                    title: "نتيجة البحث",
-                    text: "هذه هي النتيجة"
-                  });
-                });
-            } else {
-              const link = document.createElement("a");
-              link.href = imgData;
-              link.download = "result.png";
-              link.click();
-            }
-          }).catch(err => {
-            alert("حدث خطأ أثناء إنشاء الصورة: " + err.message);
-          });
-        });
-
-      })
-      .catch(error => {
-        document.getElementById("sheetTitle").textContent = "برجاء إعادة تحميل الصفحة للحصول على بيانات محدثة";
-        console.error("Error fetching data:", error);
-      });
-  }
-
-  function logout() {
-    if (!confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟")) return;
-    firebase.auth().signOut().then(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-      location.reload();
-    }).catch((error) => {
-      alert("حدث خطأ أثناء تسجيل الخروج.");
-    });
-  }
 </script>
-
-
-
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
