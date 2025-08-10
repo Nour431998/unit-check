@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.6</title>
+  <title>AMWAJ 2025 Ver2.8</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -294,7 +294,7 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-        // زر التحميل بجودة عالية على عنصر container
+        // زر التحميل بجودة عالية على main-container
         const downloadBtn = document.createElement("button");
         downloadBtn.id = "downloadBtn";
         downloadBtn.textContent = "تحميل النتيجة";
@@ -358,11 +358,11 @@
         scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
         document.head.appendChild(scriptCanvas);
 
-        // تحميل العنصر container بجودة عالية
+        // تصوير main-container بجودة عالية
         downloadBtn.addEventListener("click", () => {
-          const container = document.getElementById("container");
+          const container = document.getElementById("main-container");
           if (!container) {
-            alert("العنصر container غير موجود.");
+            alert("العنصر main-container غير موجود.");
             return;
           }
 
@@ -413,8 +413,10 @@
   }
 </script>
 
+
 </body>
 </html>
+
 
 
 
