@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver1.6</title>
+  <title>AMWAJ 2025 Ver2.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -240,15 +240,13 @@
   // إعادة تعيين كلمة السر بنافذة منبثقة لكتابة البريد
   function resetPassword() {
     const email = prompt("من فضلك أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور:");
-
     if (!email) {
       alert("لم يتم إدخال بريد إلكتروني.");
       return;
     }
-
     firebase.auth().sendPasswordResetEmail(email.trim())
       .then(() => {
-        alert("✅  سيتم ارسال بريد الكتروني برسالة اعادة ضبط كلمة السر في حالة مطابقة البيانات .");
+        alert("✅ تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.");
       })
       .catch(error => {
         alert("❌ خطأ: " + error.message);
@@ -257,8 +255,7 @@
 
   // مراقبة انتهاء الجلسة بعد 24 ساعة
   function checkSessionTimeout() {
-    const ONE_DAY = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
-
+    const ONE_DAY = 24 * 60 * 60 * 1000;
     function logoutIfExpired() {
       const loginTimestamp = localStorage.getItem("loginTimestamp");
       if (loginTimestamp) {
@@ -274,11 +271,10 @@
         }
       }
     }
-
     logoutIfExpired();
   }
 
-  // عند تحميل الصفحة، تحقق حالة تسجيل الدخول
+  // مراقبة حالة تسجيل الدخول
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       if (!localStorage.getItem("loginTimestamp")) {
@@ -294,14 +290,14 @@
     }
   });
 
-  // تفعيل دخول بالضغط على Enter في كلمة المرور
+  // دخول بالضغط على Enter
   document.getElementById("password").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
       login();
     }
   });
 
-  // تحميل بيانات Google Sheets وعرضها
+  // تحميل بيانات Google Sheets
   function loadData() {
     const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
 
@@ -343,6 +339,7 @@
               ts.disable();
               selectContainer.style.display = "none";
               resetBtn.style.display = "inline-block";
+              downloadBtn.style.display = "block";
             } else {
               const p = document.createElement("p");
               p.textContent = "لم يتم العثور على البيانات.";
@@ -358,6 +355,7 @@
           selectContainer.style.display = "block";
           resultContainer.innerHTML = "";
           resetBtn.style.display = "none";
+          downloadBtn.style.display = "none";
         });
       })
       .catch(error => {
@@ -368,11 +366,7 @@
 
   // تسجيل الخروج مع تأكيد
   function logout() {
-    const confirmLogout = confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟");
-    if (!confirmLogout) {
-      return;
-    }
-
+    if (!confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟")) return;
     firebase.auth().signOut().then(() => {
       localStorage.removeItem("loginTimestamp");
       localStorage.clear();
@@ -383,10 +377,55 @@
       alert("حدث خطأ أثناء تسجيل الخروج.");
     });
   }
+
+  // إضافة مكتبة html2canvas
+  const scriptCanvas = document.createElement("script");
+  scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+  document.head.appendChild(scriptCanvas);
+
+  // إنشاء زر تحميل النتيجة
+  const downloadBtn = document.createElement("button");
+  downloadBtn.textContent = "📥 تحميل النتيجة";
+  downloadBtn.style.backgroundColor = "#28a745";
+  downloadBtn.style.color = "#fff";
+  downloadBtn.style.marginTop = "10px";
+  downloadBtn.style.padding = "10px 15px";
+  downloadBtn.style.border = "none";
+  downloadBtn.style.borderRadius = "5px";
+  downloadBtn.style.cursor = "pointer";
+  downloadBtn.style.display = "none";
+  document.querySelector(".container").appendChild(downloadBtn);
+
+  // حدث الضغط على زر التحميل - أخذ صورة من المستطيل نفسه
+  downloadBtn.addEventListener("click", () => {
+    const resultContainer = document.getElementById("resultContainer");
+    html2canvas(resultContainer).then(canvas => {
+      const imgData = canvas.toDataURL("image/png");
+      if (navigator.share) {
+        fetch(imgData)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "result.png", { type: "image/png" });
+            navigator.share({
+              files: [file],
+              title: "نتيجة البحث",
+              text: "هذه هي النتيجة"
+            });
+          });
+      } else {
+        const link = document.createElement("a");
+        link.href = imgData;
+        link.download = "result.png";
+        link.click();
+      }
+    });
+  });
 </script>
+
 
 </body>
 </html>
+
 
 
 
