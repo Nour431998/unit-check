@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.1</title>
+  <title>AMWAJ 2025 Ver2.2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -294,6 +294,7 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
+        // زر التحميل
         const downloadBtn = document.createElement("button");
         downloadBtn.textContent = "📥 تحميل النتيجة";
         downloadBtn.style.backgroundColor = "#28a745";
@@ -351,12 +352,15 @@
           downloadBtn.style.display = "none";
         });
 
+        // مكتبة html2canvas
         const scriptCanvas = document.createElement("script");
         scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
         document.head.appendChild(scriptCanvas);
 
+        // تصوير الإطار الكامل
         downloadBtn.addEventListener("click", () => {
-          html2canvas(resultContainer, { scale: 3 }).then(canvas => { // دقة عالية
+          const frameElement = document.getElementById("main-container"); // الإطار الخارجي
+          html2canvas(frameElement, { scale: 3 }).then(canvas => {
             const imgData = canvas.toDataURL("image/png");
             if (navigator.share) {
               fetch(imgData)
@@ -398,8 +402,10 @@
 
 
 
+
 </body>
 </html>
+
 
 
 
