@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.4</title>
+  <title>AMWAJ 2025 Ver2.5</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -294,7 +294,7 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-        // زر التحميل (محدث لتحسين جودة الصورة وتقليل الفوارغ)
+        // زر التحميل (محدث لتصوير العناصر مع بعض)
         const downloadBtn = document.createElement("button");
         downloadBtn.id = "downloadBtn";
         downloadBtn.textContent = "تحميل النتيجة";
@@ -358,18 +358,36 @@
         scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
         document.head.appendChild(scriptCanvas);
 
-        // حدث عند الضغط على زر التحميل
+        // حدث عند الضغط على زر التحميل - تصوير logo-bar + sheetTitle + resultContainer
         downloadBtn.addEventListener("click", () => {
-          const frameElement = document.getElementById("resultContainer"); // استهداف عنصر النتيجة فقط
-          const rect = frameElement.getBoundingClientRect();
+          const containerToCapture = document.createElement("div");
+          containerToCapture.style.padding = "20px";
+          containerToCapture.style.background = "white";
+          containerToCapture.style.display = "inline-block";
+          containerToCapture.style.textAlign = "right"; // لو الصفحة عربية
 
-          html2canvas(frameElement, {
+          const logoBar = document.getElementById("logo-bar");
+          const sheetTitle = document.getElementById("sheetTitle");
+          const resultContainer = document.getElementById("resultContainer");
+
+          if (!logoBar || !sheetTitle || !resultContainer) {
+            alert("العناصر المطلوبة غير موجودة.");
+            return;
+          }
+
+          containerToCapture.appendChild(logoBar.cloneNode(true));
+          containerToCapture.appendChild(sheetTitle.cloneNode(true));
+          containerToCapture.appendChild(resultContainer.cloneNode(true));
+
+          containerToCapture.style.position = "fixed";
+          containerToCapture.style.top = "-9999px";
+          containerToCapture.style.left = "-9999px";
+
+          document.body.appendChild(containerToCapture);
+
+          html2canvas(containerToCapture, {
             scale: 3,
-            scrollX: -window.scrollX,
-            scrollY: -window.scrollY,
             useCORS: true,
-            width: rect.width,
-            height: rect.height,
             backgroundColor: null
           }).then(canvas => {
             const imgData = canvas.toDataURL("image/png");
@@ -390,8 +408,10 @@
               link.download = "result.png";
               link.click();
             }
+            document.body.removeChild(containerToCapture);
           }).catch(err => {
             alert("حدث خطأ أثناء إنشاء الصورة: " + err.message);
+            document.body.removeChild(containerToCapture);
           });
         });
 
@@ -414,10 +434,9 @@
   }
 </script>
 
-
-
 </body>
 </html>
+
 
 
 
