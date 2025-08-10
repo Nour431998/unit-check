@@ -248,7 +248,7 @@
 
     firebase.auth().sendPasswordResetEmail(email.trim())
       .then(() => {
-        alert("✅ تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.");
+        alert("✅  سيتم ارسال بريد الكتروني برسالة اعادة ضبط كلمة السر في حالة مطابقة البيانات .");
       })
       .catch(error => {
         alert("❌ خطأ: " + error.message);
@@ -387,5 +387,6 @@
 
 </body>
 </html>
+
 
 
