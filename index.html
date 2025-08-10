@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.2</title>
+  <title>AMWAJ 2025 Ver2.3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -294,17 +294,18 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-        // زر التحميل
+        // زر التحميل (محدث حسب طلبك)
         const downloadBtn = document.createElement("button");
-        downloadBtn.textContent = "📥 تحميل النتيجة";
-        downloadBtn.style.backgroundColor = "#28a745";
-        downloadBtn.style.color = "#fff";
+        downloadBtn.id = "downloadBtn";
+        downloadBtn.textContent = "تحميل النتيجة";
+        downloadBtn.style.backgroundColor = "green";
+        downloadBtn.style.color = "white";
         downloadBtn.style.margin = "10px";
         downloadBtn.style.padding = "10px 15px";
         downloadBtn.style.border = "none";
         downloadBtn.style.borderRadius = "5px";
         downloadBtn.style.cursor = "pointer";
-        downloadBtn.style.display = "none";
+        downloadBtn.style.display = "none";  // مخفي مبدئياً
         resetBtn.parentNode.insertBefore(downloadBtn, resetBtn);
 
         if (unitSelect.tomselect) {
@@ -352,12 +353,12 @@
           downloadBtn.style.display = "none";
         });
 
-        // مكتبة html2canvas
+        // إضافة مكتبة html2canvas تلقائياً
         const scriptCanvas = document.createElement("script");
         scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
         document.head.appendChild(scriptCanvas);
 
-        // تصوير الإطار الكامل
+        // حدث عند الضغط على زر التحميل
         downloadBtn.addEventListener("click", () => {
           const frameElement = document.getElementById("main-container"); // الإطار الخارجي
           html2canvas(frameElement, { scale: 3 }).then(canvas => {
@@ -381,6 +382,7 @@
             }
           });
         });
+
       })
       .catch(error => {
         document.getElementById("sheetTitle").textContent = "برجاء إعادة تحميل الصفحة للحصول على بيانات محدثة";
@@ -401,10 +403,9 @@
 </script>
 
 
-
-
 </body>
 </html>
+
 
 
 
