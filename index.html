@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.3</title>
+  <title>AMWAJ 2025 Ver2.4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -294,7 +294,7 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-        // زر التحميل (محدث حسب طلبك)
+        // زر التحميل (محدث لتحسين جودة الصورة وتقليل الفوارغ)
         const downloadBtn = document.createElement("button");
         downloadBtn.id = "downloadBtn";
         downloadBtn.textContent = "تحميل النتيجة";
@@ -360,8 +360,18 @@
 
         // حدث عند الضغط على زر التحميل
         downloadBtn.addEventListener("click", () => {
-          const frameElement = document.getElementById("main-container"); // الإطار الخارجي
-          html2canvas(frameElement, { scale: 3 }).then(canvas => {
+          const frameElement = document.getElementById("resultContainer"); // استهداف عنصر النتيجة فقط
+          const rect = frameElement.getBoundingClientRect();
+
+          html2canvas(frameElement, {
+            scale: 3,
+            scrollX: -window.scrollX,
+            scrollY: -window.scrollY,
+            useCORS: true,
+            width: rect.width,
+            height: rect.height,
+            backgroundColor: null
+          }).then(canvas => {
             const imgData = canvas.toDataURL("image/png");
             if (navigator.share) {
               fetch(imgData)
@@ -380,6 +390,8 @@
               link.download = "result.png";
               link.click();
             }
+          }).catch(err => {
+            alert("حدث خطأ أثناء إنشاء الصورة: " + err.message);
           });
         });
 
@@ -403,8 +415,10 @@
 </script>
 
 
+
 </body>
 </html>
+
 
 
 
