@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.8</title>
+  <title>AMWAJ 2025 Ver2.9</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -294,18 +294,17 @@
         const resetBtn = document.getElementById("resetBtn");
         const selectContainer = document.getElementById("selectContainer");
 
-        // زر التحميل بجودة عالية على main-container
+        // زر التحميل
         const downloadBtn = document.createElement("button");
-        downloadBtn.id = "downloadBtn";
-        downloadBtn.textContent = "تحميل النتيجة";
-        downloadBtn.style.backgroundColor = "green";
-        downloadBtn.style.color = "white";
+        downloadBtn.textContent = "📥 تحميل النتيجة";
+        downloadBtn.style.backgroundColor = "#28a745";
+        downloadBtn.style.color = "#fff";
         downloadBtn.style.margin = "10px";
         downloadBtn.style.padding = "10px 15px";
         downloadBtn.style.border = "none";
         downloadBtn.style.borderRadius = "5px";
         downloadBtn.style.cursor = "pointer";
-        downloadBtn.style.display = "none";  // مخفي مبدئياً
+        downloadBtn.style.display = "none";
         resetBtn.parentNode.insertBefore(downloadBtn, resetBtn);
 
         if (unitSelect.tomselect) {
@@ -353,12 +352,12 @@
           downloadBtn.style.display = "none";
         });
 
-        // إضافة مكتبة html2canvas تلقائياً
+        // تحميل مكتبة html2canvas
         const scriptCanvas = document.createElement("script");
         scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
         document.head.appendChild(scriptCanvas);
 
-        // تصوير main-container بجودة عالية
+        // وظيفة زر التحميل مع قص التلت الأوسط عمودياً وجودة عالية
         downloadBtn.addEventListener("click", () => {
           const container = document.getElementById("main-container");
           if (!container) {
@@ -367,11 +366,27 @@
           }
 
           html2canvas(container, {
-            scale: 4,
+            scale: 5,
             useCORS: true,
-            backgroundColor: null
+            backgroundColor: null,
           }).then(canvas => {
-            const imgData = canvas.toDataURL("image/png");
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+
+            // حساب التلت الأوسط عمودياً
+            const cropWidth = imgWidth / 3;
+            const cropX = cropWidth; // نبدأ من التلت الأول (نقص التلت الأيسر)
+
+            // إنشاء canvas جديد ورسم التلت الأوسط فقط
+            const croppedCanvas = document.createElement("canvas");
+            const ctx = croppedCanvas.getContext("2d");
+            croppedCanvas.width = cropWidth;
+            croppedCanvas.height = imgHeight;
+
+            ctx.drawImage(canvas, cropX, 0, cropWidth, imgHeight, 0, 0, cropWidth, imgHeight);
+
+            const imgData = croppedCanvas.toDataURL("image/png");
+
             if (navigator.share) {
               fetch(imgData)
                 .then(res => res.blob())
@@ -393,7 +408,6 @@
             alert("حدث خطأ أثناء إنشاء الصورة: " + err.message);
           });
         });
-
       })
       .catch(error => {
         document.getElementById("sheetTitle").textContent = "برجاء إعادة تحميل الصفحة للحصول على بيانات محدثة";
@@ -407,15 +421,17 @@
       localStorage.clear();
       sessionStorage.clear();
       location.reload();
-    }).catch((error) => {
+    }).catch(() => {
       alert("حدث خطأ أثناء تسجيل الخروج.");
     });
   }
 </script>
 
 
+
 </body>
 </html>
+
 
 
 
