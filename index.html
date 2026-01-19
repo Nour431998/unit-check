@@ -9,161 +9,45 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      direction: rtl;
-    }
-    .container {
-      max-width: 600px;
-      margin: 5vh auto;
-      background: white;
-      padding: 30px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .logo-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      gap: 10px;
-    }
-    .logo-bar img {
-      max-height: 60px;
-      max-width: 48%;
-      object-fit: contain;
-    }
-    h2 {
-      color: #333;
-      margin-top: 10px;
-      margin-bottom: 10px;
-    }
-    h3 {
-      color: #555;
-      font-size: 16px;
-      margin-bottom: 20px;
-      font-weight: normal;
-    }
-    select, .ts-wrapper {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    .ts-wrapper {
-      background-color: #fdfcf8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      border-radius: 8px;
-      padding: 10px;
-    }
-    .result p {
-      background: #e9f5e9;
-      color: #2c3e50;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-    .result .unit-number {
-      background: #f5e1d4;
-      color: #000;
-      text-align: center;
-      font-size: 18px;
-    }
-    .no-data {
-      background: #fdecea;
-      color: #c0392b;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin-top: 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      max-width: 300px;
-      width: 100%;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; padding: 0; direction: rtl; }
+    .container { max-width: 600px; margin: 5vh auto; background: white; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+    .logo-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
+    .logo-bar img { max-height: 60px; max-width: 48%; object-fit: contain; }
+    h2 { color: #333; margin-top: 10px; margin-bottom: 10px; }
+    h3 { color: #555; font-size: 16px; margin-bottom: 20px; font-weight: normal; }
+    select, .ts-wrapper { width: 100%; margin-bottom: 20px; }
+    .ts-wrapper { background-color: #fdfcf8; display: flex; justify-content: center; align-items: center; text-align: center; border-radius: 8px; padding: 10px; }
+    .result p { background: #e9f5e9; color: #2c3e50; padding: 10px; margin: 10px 0; border-radius: 8px; font-weight: bold; }
+    .result .unit-number { background: #f5e1d4; color: #000; text-align: center; font-size: 18px; }
+    .no-data { background: #fdecea; color: #c0392b; }
+    button { background-color: #007bff; color: white; border: none; padding: 10px 20px; margin-top: 20px; border-radius: 8px; cursor: pointer; font-size: 16px; max-width: 300px; width: 100%; }
+    button:hover { background-color: #0056b3; }
     #loading::after {
-      content: '';
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      margin-right: 8px;
-      border: 3px solid #007bff;
-      border-top: 3px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      vertical-align: middle;
+      content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 8px;
+      border: 3px solid #007bff; border-top: 3px solid transparent; border-radius: 50%;
+      animation: spin 1s linear infinite; vertical-align: middle;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     @media (max-width: 600px) {
-      .container {
-        margin: 2vh 10px;
-        padding: 20px;
-      }
-      .logo-bar {
-        flex-direction: row;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      .logo-bar img {
-        max-width: 48%;
-      }
-      .logo-bar img:last-child {
-        max-width: 58%;
-      }
+      .container { margin: 2vh 10px; padding: 20px; }
+      .logo-bar { flex-direction: row; justify-content: space-between; gap: 10px; }
+      .logo-bar img { max-width: 48%; }
+      .logo-bar img:last-child { max-width: 58%; }
     }
-    /* توسيط خانات الدخول */
+
     #auth-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      text-align: center;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px; text-align: center;
     }
     #auth-container input {
-      max-width: 300px;
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      text-align: center;
+      max-width: 300px; width: 100%; padding: 10px; margin-bottom: 10px;
+      border: 1px solid #ccc; border-radius: 6px; text-align: center;
     }
-    #auth-container button {
-      max-width: 300px;
-      width: 100%;
-    }
-    #auth-container p a {
-      color: #007bff;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .logo-bar.auth-logos {
-  margin-bottom: 30px;
-  justify-content: space-between;
-}
-
-.logo-bar.auth-logos img {
-  max-height: 60px;
-  max-width: 48%;
-  object-fit: contain;
-}
+    #auth-container button { max-width: 300px; width: 100%; }
+    #auth-container p a { color: #007bff; text-decoration: underline; cursor: pointer; }
+    .logo-bar.auth-logos { margin-bottom: 30px; justify-content: space-between; }
+    .logo-bar.auth-logos img { max-height: 60px; max-width: 48%; object-fit: contain; }
   </style>
 </head>
 <body>
@@ -197,6 +81,7 @@
     </div>
 
     <div class="result" id="resultContainer"></div>
+    <button id="shareBtn" style="display:none;background-color:#28a745;margin:10px;">📥 مشاركة النتيجة</button>
     <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
     <button onclick="logout()" style="background-color: #dc3545; margin-top: 30px;">🚪 تسجيل الخروج</button>
   </div>
@@ -224,7 +109,7 @@
         localStorage.setItem("loginTimestamp", Date.now());
         document.getElementById("auth-container").style.display = "none";
         document.getElementById("main-container").style.display = "block";
-        loadData();
+        // ✅ مهم: لا تنادي loadData هنا (onAuthStateChanged هيناديها)
         checkSessionTimeout();
       })
       .catch(error => {
@@ -268,7 +153,7 @@
       checkSessionTimeout();
       document.getElementById("auth-container").style.display = "none";
       document.getElementById("main-container").style.display = "block";
-      loadData();
+      loadData(); // ✅ التحميل يحصل هنا فقط
     } else {
       document.getElementById("auth-container").style.display = "flex";
       document.getElementById("main-container").style.display = "none";
@@ -279,95 +164,111 @@
     if (event.key === "Enter") login();
   });
 
-  function loadData() {
-    const jsonUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
+  // ✅ تحميل html2canvas عند الحاجة فقط
+  async function ensureHtml2Canvas() {
+    if (window.html2canvas) return;
+    await new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
 
-    fetch(jsonUrl)
+  function loadData() {
+    // ✅ نفس اللينك بتاعك
+    const baseUrl = "https://script.google.com/macros/s/AKfycbxKJqN654lCFkyc18D1OJo--REzjBh16eb04sgnKNohBH7dQ5SXBBiBj1wUh8eJxbHN/exec";
+
+    const unitKey = "Unit";
+    const displayKeys = ["status", "2023", "2024", "ملاحظات"];
+
+    const unitSelect = document.getElementById("unitSelect");
+    const resultContainer = document.getElementById("resultContainer");
+    const resetBtn = document.getElementById("resetBtn");
+    const selectContainer = document.getElementById("selectContainer");
+    const titleEl = document.getElementById("sheetTitle");
+    const shareBtn = document.getElementById("shareBtn");
+
+    // 1) title only
+    fetch(baseUrl + "?meta=1")
+      .then(r => r.json())
+      .then(j => { titleEl.textContent = j.title || "MAINTENANCE"; })
+      .catch(() => { titleEl.textContent = "برجاء إعادة تحميل الصفحة"; });
+
+    // 2) units only
+    titleEl.innerHTML = `<span id="loading">تحميل الوحدات</span>`;
+    fetch(baseUrl + "?units=1")
       .then(res => res.json())
       .then(json => {
-        document.getElementById("sheetTitle").textContent = json.title;
-        const rows = json.data;
-        const unitKey = "Unit";
+        titleEl.textContent = json.title || "MAINTENANCE";
+        const units = json.units || [];
 
-        const unitSelect = document.getElementById("unitSelect");
-        const resultContainer = document.getElementById("resultContainer");
-        const resetBtn = document.getElementById("resetBtn");
-        const selectContainer = document.getElementById("selectContainer");
-
-        const downloadBtn = document.createElement("button");
-        downloadBtn.textContent = "📥 مشاركة النتيجة";
-        downloadBtn.style.backgroundColor = "#28a745";
-        downloadBtn.style.color = "#fff";
-        downloadBtn.style.margin = "10px";
-        downloadBtn.style.padding = "10px 15px";
-        downloadBtn.style.border = "none";
-        downloadBtn.style.borderRadius = "5px";
-        downloadBtn.style.cursor = "pointer";
-        downloadBtn.style.display = "none";
-        resetBtn.parentNode.insertBefore(downloadBtn, resetBtn);
-
-        if (unitSelect.tomselect) {
-          unitSelect.tomselect.destroy();
-        }
+        if (unitSelect.tomselect) unitSelect.tomselect.destroy();
 
         const ts = new TomSelect(unitSelect, {
-          placeholder: 'اختر رقم الوحدة...',
-          options: rows.map(row => ({ value: row[unitKey], text: row[unitKey] })),
-          onChange: (value) => {
+          placeholder: "اختر رقم الوحدة...",
+          options: units.map(u => ({ value: u, text: u })),
+          onChange: async (value) => {
             resultContainer.innerHTML = "";
-            const matchedRow = rows.find(row => row[unitKey] === value);
-            if (matchedRow) {
+            shareBtn.style.display = "none";
+
+            if (!value) return;
+
+            titleEl.innerHTML = `<span id="loading">تحميل بيانات الوحدة</span>`;
+
+            try {
+              const r = await fetch(baseUrl + "?unit=" + encodeURIComponent(value));
+              const j = await r.json();
+              titleEl.textContent = j.title || "MAINTENANCE";
+
+              const row = j.data;
+              if (!row) {
+                resultContainer.innerHTML = `<p class="no-data">لم يتم العثور على البيانات.</p>`;
+                return;
+              }
+
               const unitP = document.createElement("p");
-              unitP.textContent = `الوحدة رقم: ${matchedRow[unitKey]}`;
+              unitP.textContent = `الوحدة رقم: ${row[unitKey]}`;
               unitP.className = "unit-number";
               resultContainer.appendChild(unitP);
 
-              const displayKeys = ["status", "2023", "2024", "ملاحظات"];
               displayKeys.forEach(key => {
                 const p = document.createElement("p");
-                p.textContent = `${key}: ${matchedRow[key] ?? "لا يوجد"}`;
+                p.textContent = `${key}: ${row[key] ?? "لا يوجد"}`;
                 resultContainer.appendChild(p);
               });
 
               ts.disable();
               selectContainer.style.display = "none";
               resetBtn.style.display = "inline-block";
-              downloadBtn.style.display = "inline-block";
-            } else {
-              const p = document.createElement("p");
-              p.textContent = "لم يتم العثور على البيانات.";
-              p.className = "no-data";
-              resultContainer.appendChild(p);
+              shareBtn.style.display = "inline-block";
+            } catch (err) {
+              titleEl.textContent = "حدث خطأ";
+              resultContainer.innerHTML = `<p class="no-data">خطأ في تحميل بيانات الوحدة.</p>`;
             }
           }
         });
 
-        resetBtn.addEventListener("click", () => {
+        resetBtn.onclick = () => {
           ts.clear();
           ts.enable();
           selectContainer.style.display = "block";
           resultContainer.innerHTML = "";
           resetBtn.style.display = "none";
-          downloadBtn.style.display = "none";
-        });
+          shareBtn.style.display = "none";
+        };
 
-        const scriptCanvas = document.createElement("script");
-        scriptCanvas.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-        document.head.appendChild(scriptCanvas);
-
-        downloadBtn.addEventListener("click", () => {
-          html2canvas(resultContainer, { scale: 3 }).then(canvas => { // دقة عالية
+        shareBtn.onclick = async () => {
+          await ensureHtml2Canvas();
+          html2canvas(resultContainer, { scale: 3 }).then(canvas => {
             const imgData = canvas.toDataURL("image/png");
             if (navigator.share) {
               fetch(imgData)
                 .then(res => res.blob())
                 .then(blob => {
                   const file = new File([blob], "result.png", { type: "image/png" });
-                  navigator.share({
-                    files: [file],
-                    title: "نتيجة البحث",
-                    text: "هذه هي النتيجة"
-                  });
+                  navigator.share({ files: [file], title: "نتيجة البحث", text: "هذه هي النتيجة" });
                 });
             } else {
               const link = document.createElement("a");
@@ -376,10 +277,10 @@
               link.click();
             }
           });
-        });
+        };
       })
       .catch(error => {
-        document.getElementById("sheetTitle").textContent = "برجاء إعادة تحميل الصفحة للحصول على بيانات محدثة";
+        titleEl.textContent = "برجاء إعادة تحميل الصفحة للحصول على بيانات محدثة";
         console.error("Error fetching data:", error);
       });
   }
@@ -390,19 +291,11 @@
       localStorage.clear();
       sessionStorage.clear();
       location.reload();
-    }).catch((error) => {
+    }).catch(() => {
       alert("حدث خطأ أثناء تسجيل الخروج.");
     });
   }
 </script>
 
-
-
 </body>
 </html>
-
-
-
-
-
-
