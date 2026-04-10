@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Professional Reporting System</title>
+  <title>Eltizam - Advanced Reporting</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -14,7 +14,7 @@
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
     .container { max-width: 1000px; margin: 20px auto; padding: 15px; }
     
-    /* لوحة التحكم والفلترة */
+    /* لوحة التحكم */
     .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
@@ -22,7 +22,7 @@
     
     select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
     
-    .btn-export { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; width: 100%; }
+    .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .btn-export:hover { background: #d35400; }
 
     /* العداد */
@@ -39,44 +39,44 @@
     .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .data-group { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px; border: 1px solid #eee; }
     
-    @media (max-width: 600px) { .card-section { grid-template-columns: 1fr; } }
-    
-    /* تنسيق خاص للطباعة */
+    /* ميز Category و Description */
+    .info-box { background: #fffcf0; border: 1px solid #f3e5ab; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+    .category-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+
     @media print {
         .filter-panel, .btn-export, button { display: none !important; }
-        .container { width: 100% !important; max-width: none !important; margin: 0 !important; }
-        .ticket-card { border: 1px solid #ddd !important; box-shadow: none !important; }
+        .ticket-card { border: 1px solid #ddd !important; margin-bottom: 20px; }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">⬅️ رجوع</button>
+  <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">⬅️ القائمة الرئيسية</button>
 
   <div class="filter-panel" id="filterPanel" style="display: none;">
     <div class="filter-grid">
       <div class="filter-group"><label>المشروع</label><select id="fProj" onchange="applyFilters()"><option value="">الكل</option></select></div>
-      <div class="filter-group"><label>الحالة</label><select id="fStat" onchange="applyFilters()"><option value="">الكل</option></select></div>
-      <div class="filter-group"><label>الفريق المسئول</label><select id="fTeam" onchange="applyFilters()"><option value="">الكل</option></select></div>
-      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="SN أو وحدة..." onkeyup="applyFilters()"></div>
+      <div class="filter-group"><label>نسبة الإنجاز</label><select id="fComp" onchange="applyFilters()"><option value="">كل النسب</option></select></div>
+      <div class="filter-group"><label>الفريق المسئول</label><select id="fTeam" onchange="applyFilters()"><option value="">كل الفرق</option></select></div>
+      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="رقم الوحدة، SN، أو التصنيف..." onkeyup="applyFilters()"></div>
     </div>
     
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <div id="stats" style="flex: 1; font-size: 13px; font-weight: bold; color: var(--primary);"></div>
-        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 تصدير النتائج لملف PDF</button>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div id="stats" style="flex: 1; font-size: 14px; font-weight: bold; color: var(--primary);"></div>
+        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 استخراج تقرير PDF</button>
     </div>
   </div>
 
   <div id="loader-container">
-    <div id="loader-text" style="font-weight:bold;">جاري مزامنة البيانات السحابية (120 ثانية)...</div>
+    <div id="loader-text" style="font-weight:bold;">جاري مزامنة بيانات "التزام" (120 ثانية)...</div>
     <div class="progress-wrapper"><div id="progress-bar"></div><span id="progress-text" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">0%</span></div>
   </div>
 
-  <div id="reportContent">
-      <div id="reportHeader" style="display:none; text-align:center; margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:10px;">
-          <h2 style="margin:0;">تقرير الطلبات المفتوحة - Eltizam</h2>
-          <p id="reportDate" style="margin:5px 0; font-size:12px;"></p>
+  <div id="reportArea">
+      <div id="reportHeader" style="display:none; text-align:center; margin-bottom:30px; border-bottom:4px solid #2c3e50; padding-bottom:15px;">
+          <h1 style="margin:0; color:#2c3e50;">تقرير طلبات الصيانة المفتوحة</h1>
+          <p id="reportDate" style="margin:5px 0; font-size:14px;"></p>
       </div>
       <div id="ticketsList"></div>
   </div>
@@ -104,7 +104,6 @@
     const progressBar = document.getElementById("progress-bar");
     const progressText = document.getElementById("progress-text");
     let currentProgress = 0;
-
     const interval = setInterval(() => {
       if (currentProgress < 92) {
         currentProgress += (92 / 120);
@@ -116,7 +115,6 @@
     try {
       const res = await fetch("/.netlify/functions/gsheet?sheet=Inspire Tickets&all=1");
       const json = await res.json();
-      
       clearInterval(interval);
       progressBar.style.width = "100%";
       progressText.textContent = "100%";
@@ -128,7 +126,7 @@
         document.getElementById("loader-container").style.display = "none";
         document.getElementById("filterPanel").style.display = "block";
       }, 500);
-    } catch (e) { alert("فشل في جلب البيانات"); }
+    } catch (e) { alert("خطأ في الاتصال"); }
   }
 
   function setupFilters(data) {
@@ -138,68 +136,84 @@
       vals.forEach(v => el.add(new Option(v, v)));
     };
     fill("fProj", "Project");
-    fill("fStat", "Status");
+    fill("fComp", "Level of Completion");
     fill("fTeam", "Res Team");
   }
 
   function applyFilters() {
     const p = document.getElementById("fProj").value;
-    const s = document.getElementById("fStat").value;
+    const c = document.getElementById("fComp").value;
     const tVal = document.getElementById("fTeam").value;
     const search = document.getElementById("fSearch").value.toLowerCase();
 
     const filtered = originalData.filter(t => {
+      const combined = `${t.SN} ${t["Unit Number"]} ${t.Category} ${t.Description}`.toLowerCase();
       return (!p || t.Project === p) &&
-             (!s || t.Status === s) &&
+             (!c || t["Level of Completion"] === c) &&
              (!tVal || t["Res Team"] === tVal) &&
-             (!search || `${t.SN} ${t["Unit Number"]} ${t["Reporter Name"]}`.toLowerCase().includes(search));
+             (!search || combined.includes(search));
     });
-
     renderCards(filtered);
     document.getElementById("stats").textContent = `عدد النتائج: ${filtered.length}`;
   }
 
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
-    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد نتائج.</p>"; return; }
+    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد بيانات.</p>"; return; }
     
     list.innerHTML = data.map(t => `
       <div class="ticket-card priority-${t.Priority || 'Low'}">
-        <div style="display:flex; justify-content:space-between; font-weight:bold; color:var(--primary);">
-          <span>وحدة: ${t["Unit Number"] || "-"}</span>
-          <span>SN: ${t.SN}</span>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="font-weight:bold; font-size:16px;">وحدة: ${t["Unit Number"] || "-"}</span>
+          <span style="font-weight:bold; color:green;">${t["Level of Completion"] || "0%"}</span>
         </div>
-        <h4 style="color:#d35400; margin:10px 0;">${t["Case Type"]}</h4>
+        
+        <div style="margin: 5px 0; font-size: 11px; color: #888;">SN: ${t.SN} | ${t["Created Date"]}</div>
+        
+        <div style="margin-top:10px;">
+           <span class="category-badge">تصنيف: ${t.Category || "عام"}</span>
+           <h3 style="color:#d35400; margin:5px 0;">${t["Case Type"]}</h3>
+        </div>
+
+        <div class="info-box">
+          <strong>📝 الوصف:</strong> ${t.Description || "لا يوجد وصف مسجل."}
+        </div>
+
         <div class="card-section">
-          <div class="data-group"><strong>العميل:</strong> ${t["Reporter Name"]}<br><strong>هاتف:</strong> ${t["Mobile Number"]}</div>
-          <div class="data-group"><strong>المشروع:</strong> ${t.Project}<br><strong>الحالة:</strong> ${t.Status}</div>
-        </div>
-        <div style="margin-top:10px; background:#f0f7ff; padding:10px; border-radius:8px; font-size:13px;">
-          <strong>الفريق المسئول:</strong> <mark>${t["Res Team"] || "غير محدد"}</mark>
+          <div class="data-group"><strong>العميل:</strong> ${t["Reporter Name"]}<br><strong>الهاتف:</strong> ${t["Mobile Number"]}</div>
+          <div class="data-group"><strong>المشروع:</strong> ${t.Project}<br><strong>الفريق:</strong> ${t["Res Team"]}</div>
         </div>
       </div>
     `).join('');
   }
 
-  // دالة تصدير الـ PDF
   function exportToPDF() {
-    const element = document.getElementById('reportContent');
+    const element = document.getElementById('reportArea');
     const header = document.getElementById('reportHeader');
-    
-    // إظهار الهيدر مؤقتاً للتقرير فقط
+    const pdfBtn = document.getElementById('pdfBtn');
+
+    // تجهيز الشكل للطباعة
     header.style.display = 'block';
+    pdfBtn.style.display = 'none';
     document.getElementById('reportDate').textContent = "تاريخ التقرير: " + new Date().toLocaleString('ar-EG');
 
     const opt = {
-      margin:       10,
-      filename:     `Eltizam_Report_${new Date().getTime()}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: [10, 5, 10, 5],
+      filename: `Eltizam_Report_${new Date().getTime()}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        logging: false,
+        letterRendering: true 
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    // تنفيذ التصدير مع وعد (Promise) للتأكد من انتهاء الرسم
     html2pdf().set(opt).from(element).save().then(() => {
-        header.style.display = 'none'; // إخفاء الهيدر بعد الانتهاء
+        header.style.display = 'none';
+        pdfBtn.style.display = 'flex';
     });
   }
 </script>
