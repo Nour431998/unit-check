@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>AMWAJ 2025 Ver2.0</title>
+  <title>AMWAJ & ELTIZAM Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -15,45 +15,30 @@
     .logo-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
     .logo-bar img { max-height: 60px; max-width: 48%; object-fit: contain; }
     h2 { color: #333; margin-top: 10px; margin-bottom: 10px; }
-    h3 { color: #555; font-size: 16px; margin-bottom: 20px; font-weight: normal; }
-    select, .ts-wrapper { width: 100%; margin-bottom: 20px; }
-    .ts-wrapper { background-color: #fdfcf8; display: flex; justify-content: center; align-items: center; text-align: center; border-radius: 8px; padding: 10px; }
     .result p { background: #e9f5e9; color: #2c3e50; padding: 10px; margin: 10px 0; border-radius: 8px; font-weight: bold; }
     .result .unit-number { background: #f5e1d4; color: #000; text-align: center; font-size: 18px; }
     .no-data { background: #fdecea; color: #c0392b; }
-    button { background-color: #007bff; color: white; border: none; padding: 10px 20px; margin-top: 20px; border-radius: 8px; cursor: pointer; font-size: 16px; max-width: 300px; width: 100%; }
-    button:hover { background-color: #0056b3; }
+    button { background-color: #007bff; color: white; border: none; padding: 12px 20px; margin-top: 10px; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; transition: 0.3s; }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
     #loading::after { content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 8px; border: 3px solid #007bff; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (max-width: 600px) {
-      .container { margin: 2vh 10px; padding: 20px; }
-      .logo-bar { flex-direction: row; justify-content: space-between; gap: 10px; }
-      .logo-bar img { max-width: 48%; }
-      .logo-bar img:last-child { max-width: 58%; }
-    }
-
+    
     #auth-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; text-align: center; }
     #auth-container input { max-width: 300px; width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
-    #auth-container button { max-width: 300px; width: 100%; }
-    #auth-container p a { color: #007bff; text-decoration: underline; cursor: pointer; }
-    .logo-bar.auth-logos { margin-bottom: 30px; justify-content: space-between; }
-    .logo-bar.auth-logos img { max-height: 60px; max-width: 48%; object-fit: contain; }
   </style>
 </head>
 
 <body>
 
 <div id="auth-container" class="container">
-  <div class="logo-bar auth-logos">
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo" />
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo" />
+  <div class="logo-bar">
+    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Logo 1" />
+    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Logo 2" />
   </div>
-
   <h2>تسجيل الدخول</h2>
   <input type="email" id="email" placeholder="البريد الإلكتروني" />
   <input type="password" id="password" placeholder="كلمة المرور" />
-  <p><a onclick="resetPassword()">هل نسيت كلمة السر؟</a></p>
+  <p><a onclick="resetPassword()" style="color:#007bff; cursor:pointer;">نسيت كلمة السر؟</a></p>
   <button onclick="login()">دخول</button>
   <p id="auth-error" style="color: red;"></p>
 </div>
@@ -61,22 +46,25 @@
 <div id="main-container" style="display: none;">
   <div class="container">
     <div class="logo-bar">
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" alt="Right Logo" />
-      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" alt="Left Logo" />
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture1.png?raw=true" />
+      <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" />
     </div>
 
-    <h2>MAINTENANCE DIFFERENCE 2025</h2>
-    <h3 id="sheetTitle"><span id="loading">تحميل البيانات</span></h3>
-
-    <div id="selectContainer">
-      <select id="unitSelect" placeholder="اختر رقم الوحدة..."></select>
+    <div id="selection-portal" style="padding: 20px 0;">
+      <h2 style="color: #2c3e50; margin-bottom: 25px;">نظام الإدارة الموحد 2026</h2>
+      <button onclick="activateAmwaj()" style="background-color: #2c3e50;">📊 فروق صيانة أمواج (Amwaj)</button>
+      <button onclick="window.location.href='tickets.html'" style="background-color: #28a745;">🛠️ الطلبات المفتوحة (Eltizam)</button>
+      <button onclick="logout()" style="background-color: #dc3545; margin-top: 40px; width: 60%; font-size: 14px;">🚪 تسجيل الخروج</button>
     </div>
 
-    <div class="result" id="resultContainer"></div>
-
-    <button id="shareBtn" style="display:none;background-color:#28a745;margin:10px;">📥 مشاركة النتيجة</button>
-    <button id="resetBtn" style="display: none;">🔄 بحث عن وحدة جديدة</button>
-    <button onclick="logout()" style="background-color: #dc3545; margin-top: 30px;">🚪 تسجيل الخروج</button>
+    <div id="amwaj-app-section" style="display: none;">
+      <h2 id="sheetTitle"><span id="loading">تحميل البيانات</span></h2>
+      <div id="selectContainer"><select id="unitSelect"></select></div>
+      <div class="result" id="resultContainer"></div>
+      <button id="shareBtn" style="display:none; background-color:#28a745;">📥 مشاركة النتيجة</button>
+      <button id="resetBtn" style="display: none; background-color: #007bff;">🔄 بحث عن وحدة جديدة</button>
+      <button onclick="location.reload()" style="background-color: #6c757d; margin-top: 20px;">⬅️ العودة للقائمة</button>
+    </div>
   </div>
 </div>
 
@@ -92,205 +80,70 @@
 
   firebase.initializeApp(firebaseConfig);
 
+  // --- وظائف التنقل ---
+  function activateAmwaj() {
+    document.getElementById("selection-portal").style.display = "none";
+    document.getElementById("amwaj-app-section").style.display = "block";
+    loadData(); 
+  }
+
+  // --- وظائف Firebase ---
   function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
       .then(() => firebase.auth().signInWithEmailAndPassword(email, password))
-      .then(() => {
-        localStorage.setItem("loginTimestamp", Date.now());
-        document.getElementById("auth-container").style.display = "none";
-        document.getElementById("main-container").style.display = "block";
-        // ✅ لا تنادي loadData هنا (onAuthStateChanged هيناديها)
-        checkSessionTimeout();
-      })
-      .catch(error => {
-        document.getElementById("auth-error").textContent = "فشل تسجيل الدخول: " + error.message;
-      });
-  }
-
-  function resetPassword() {
-    const email = prompt("من فضلك أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور:");
-    if (!email) return alert("لم يتم إدخال بريد إلكتروني.");
-    firebase.auth().sendPasswordResetEmail(email.trim())
-      .then(() => alert("✅ تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني."))
-      .catch(error => alert("❌ خطأ: " + error.message));
-  }
-
-  function checkSessionTimeout() {
-    const ONE_DAY = 24 * 60 * 60 * 1000;
-    function logoutIfExpired() {
-      const loginTimestamp = localStorage.getItem("loginTimestamp");
-      if (loginTimestamp) {
-        const elapsed = Date.now() - loginTimestamp;
-        if (elapsed > ONE_DAY) {
-          firebase.auth().signOut().then(() => {
-            alert("انتهت مدة الجلسة، الرجاء تسجيل الدخول مرة أخرى.");
-            localStorage.removeItem("loginTimestamp");
-            location.reload();
-          });
-        } else {
-          setTimeout(logoutIfExpired, ONE_DAY - elapsed);
-        }
-      }
-    }
-    logoutIfExpired();
+      .catch(error => document.getElementById("auth-error").textContent = "خطأ: " + error.message);
   }
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      if (!localStorage.getItem("loginTimestamp")) {
-        localStorage.setItem("loginTimestamp", Date.now());
-      }
-      checkSessionTimeout();
       document.getElementById("auth-container").style.display = "none";
       document.getElementById("main-container").style.display = "block";
-      loadData(); // ✅ تحميل مرة واحدة هنا
     } else {
       document.getElementById("auth-container").style.display = "flex";
       document.getElementById("main-container").style.display = "none";
     }
   });
 
-  document.getElementById("password").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") login();
-  });
-
-  async function ensureHtml2Canvas() {
-    if (window.html2canvas) return;
-    await new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
+  function logout() {
+    if(confirm("تسجيل خروج؟")) firebase.auth().signOut().then(() => location.reload());
   }
 
-  function loadData() {
-    // ✅ نستخدم Proxy على Netlify لتفادي CORS
+  // --- وظيفة تحميل بيانات أمواج (الأصلية) ---
+  async function loadData() {
     const jsonUrl = "/.netlify/functions/gsheet";
-
-    const unitKey = "Unit";
-    const displayKeys = ["status", "2023", "2024", "ملاحظات"];
-
     const unitSelect = document.getElementById("unitSelect");
     const resultContainer = document.getElementById("resultContainer");
-    const resetBtn = document.getElementById("resetBtn");
-    const selectContainer = document.getElementById("selectContainer");
     const titleEl = document.getElementById("sheetTitle");
-    const shareBtn = document.getElementById("shareBtn");
 
-    // 1) title only
-    fetch(jsonUrl + "?meta=1")
-      .then(r => r.json())
-      .then(j => { titleEl.textContent = j.title || "MAINTENANCE"; })
-      .catch(() => { titleEl.textContent = "خطأ في تحميل العنوان"; });
+    try {
+      const res = await fetch(jsonUrl + "?units=1");
+      const json = await res.json();
+      titleEl.textContent = json.title || "MAINTENANCE";
 
-    // 2) units only
-    titleEl.innerHTML = `<span id="loading">تحميل الوحدات</span>`;
-    fetch(jsonUrl + "?units=1")
-      .then(res => res.json())
-      .then(json => {
-        console.log("units response:", json);
-
-        const units = json.units;
-        if (!Array.isArray(units) || units.length === 0) {
-          titleEl.textContent = "لم يتم تحميل قائمة الوحدات";
-          resultContainer.innerHTML = `<p class="no-data">تأكد من فتح /.netlify/functions/gsheet?units=1</p>`;
-          return;
+      new TomSelect(unitSelect, {
+        options: json.units.map(u => ({ value: u, text: u })),
+        onChange: async (val) => {
+          if(!val) return;
+          resultContainer.innerHTML = "جاري التحميل...";
+          const r = await fetch(jsonUrl + "?unit=" + encodeURIComponent(val));
+          const j = await r.json();
+          renderResult(j.data);
         }
-
-        titleEl.textContent = json.title || "MAINTENANCE";
-
-        if (unitSelect.tomselect) unitSelect.tomselect.destroy();
-
-        const ts = new TomSelect(unitSelect, {
-          placeholder: "اختر رقم الوحدة...",
-          options: units.map(u => ({ value: u, text: u })),
-          onChange: async (value) => {
-            resultContainer.innerHTML = "";
-            shareBtn.style.display = "none";
-            if (!value) return;
-
-            titleEl.innerHTML = `<span id="loading">تحميل بيانات الوحدة</span>`;
-
-            try {
-              const r = await fetch(jsonUrl + "?unit=" + encodeURIComponent(value));
-              const j = await r.json();
-              titleEl.textContent = j.title || "MAINTENANCE";
-
-              const row = j.data;
-              if (!row) {
-                resultContainer.innerHTML = `<p class="no-data">لم يتم العثور على البيانات.</p>`;
-                return;
-              }
-
-              const unitP = document.createElement("p");
-              unitP.textContent = `الوحدة رقم: ${row[unitKey]}`;
-              unitP.className = "unit-number";
-              resultContainer.appendChild(unitP);
-
-              displayKeys.forEach(key => {
-                const p = document.createElement("p");
-                p.textContent = `${key}: ${row[key] ?? "لا يوجد"}`;
-                resultContainer.appendChild(p);
-              });
-
-              ts.disable();
-              selectContainer.style.display = "none";
-              resetBtn.style.display = "inline-block";
-              shareBtn.style.display = "inline-block";
-            } catch (err) {
-              titleEl.textContent = "حدث خطأ";
-              resultContainer.innerHTML = `<p class="no-data">فشل تحميل بيانات الوحدة.</p>`;
-            }
-          }
-        });
-
-        resetBtn.onclick = () => {
-          ts.clear();
-          ts.enable();
-          selectContainer.style.display = "block";
-          resultContainer.innerHTML = "";
-          resetBtn.style.display = "none";
-          shareBtn.style.display = "none";
-        };
-
-        shareBtn.onclick = async () => {
-          await ensureHtml2Canvas();
-          html2canvas(resultContainer, { scale: 3 }).then(canvas => {
-            const imgData = canvas.toDataURL("image/png");
-            if (navigator.share) {
-              fetch(imgData).then(res => res.blob()).then(blob => {
-                const file = new File([blob], "result.png", { type: "image/png" });
-                navigator.share({ files: [file], title: "نتيجة البحث", text: "هذه هي النتيجة" });
-              });
-            } else {
-              const link = document.createElement("a");
-              link.href = imgData;
-              link.download = "result.png";
-              link.click();
-            }
-          });
-        };
-      })
-      .catch(error => {
-        titleEl.textContent = "خطأ في تحميل الوحدات";
-        console.error("Error fetching units:", error);
       });
+    } catch (e) { titleEl.textContent = "خطأ في الاتصال"; }
   }
 
-  function logout() {
-    if (!confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟")) return;
-    firebase.auth().signOut().then(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-      location.reload();
-    }).catch(() => {
-      alert("حدث خطأ أثناء تسجيل الخروج.");
+  function renderResult(data) {
+    const res = document.getElementById("resultContainer");
+    res.innerHTML = `<p class="unit-number">وحدة: ${data.Unit}</p>`;
+    ["status", "2023", "2024", "ملاحظات"].forEach(k => {
+      res.innerHTML += `<p>${k}: ${data[k] || "لا يوجد"}</p>`;
     });
+    document.getElementById("resetBtn").style.display = "block";
+    document.getElementById("shareBtn").style.display = "block";
+    document.getElementById("selectContainer").style.display = "none";
   }
 </script>
 </body>
