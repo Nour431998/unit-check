@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Interactive Management</title>
+  <title>Eltizam - Advanced Reporting</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -14,58 +14,80 @@
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
     .container { max-width: 1000px; margin: 20px auto; padding: 15px; }
     
+    /* لوحة التحكم */
     .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; }
-    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-size: 12px; font-weight: bold; color: var(--primary); }
     
-    .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
+    
+    .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-export:hover { background: #d35400; }
 
-    /* العداد (إعادة شريط التحميل) */
-    #loader-container { background: white; padding: 40px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
+    /* العداد */
+    #loader-container { background: white; padding: 40px; border-radius: 15px; text-align: center; }
     .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 25px; overflow: hidden; position: relative; margin-top: 15px; }
     #progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 1s linear; }
 
     /* الكروت */
     .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
     .priority-High { border-right-color: var(--danger); }
+    .priority-Medium { border-right-color: var(--warning); }
+    .priority-Low { border-right-color: var(--success); }
+    
+    .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .data-group { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px; border: 1px solid #eee; }
     
     .info-box { background: #fffcf0; border: 1px solid #f3e5ab; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
-    .category-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; margin-bottom: 5px; }
+    .category-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 
-    /* منطقة التحديث */
-    .update-box { background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px dashed #ced4da; margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-    .update-select { flex: 1; min-width: 150px; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
-    .btn-save { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    /* خانة التحديث الجديدة */
+    .update-status-area { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; display: flex; gap: 10px; align-items: center; }
+    .update-status-area select { flex: 1; padding: 8px; font-size: 13px; }
+    .btn-update-now { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+    
+    /* شاشة انتظار التحديث */
+    #update-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: center; justify-content: center; flex-direction: column; color: white; }
 
-    #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 9999; align-items: center; justify-content: center; flex-direction: column; color: white; }
+    @media print {
+        .filter-panel, .btn-export, button, .update-status-area { display: none !important; }
+        .ticket-card { border: 1px solid #ddd !important; margin-bottom: 20px; }
+    }
   </style>
 </head>
 <body>
 
-<div id="overlay">
-    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #e67e22; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
-    <div style="margin-top:10px;">جاري تحديث البيانات...</div>
+<div id="update-overlay">
+    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #e67e22; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
+    <span>جاري التحديث في جوجل شيت...</span>
 </div>
 
 <div class="container">
   <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">⬅️ القائمة الرئيسية</button>
+
+  <div class="filter-panel" id="filterPanel" style="display: none;">
+    <div class="filter-grid">
+      <div class="filter-group"><label>المشروع</label><select id="fProj" onchange="applyFilters()"><option value="">الكل</option></select></div>
+      <div class="filter-group"><label>نسبة الإنجاز</label><select id="fComp" onchange="applyFilters()"><option value="">كل النسب</option></select></div>
+      <div class="filter-group"><label>الفريق المسئول</label><select id="fTeam" onchange="applyFilters()"><option value="">كل الفرق</option></select></div>
+      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="رقم الوحدة، SN، أو التصنيف..." onkeyup="applyFilters()"></div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div id="stats" style="flex: 1; font-size: 14px; font-weight: bold; color: var(--primary);"></div>
+        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 استخراج تقرير PDF</button>
+    </div>
+  </div>
 
   <div id="loader-container">
     <div id="loader-text" style="font-weight:bold;">جاري مزامنة بيانات "التزام" (120 ثانية)...</div>
     <div class="progress-wrapper"><div id="progress-bar"></div><span id="progress-text" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">0%</span></div>
   </div>
 
-  <div class="filter-panel" id="filterPanel" style="display: none;">
-    <div class="filter-grid">
-      <div class="filter-group"><label>المشروع</label><select id="fProj" onchange="applyFilters()"><option value="">الكل</option></select></div>
-      <div class="filter-group"><label>الحالة الحالية</label><select id="fComp" onchange="applyFilters()"><option value="">كل الحالات</option></select></div>
-      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="SN أو وحدة..." onkeyup="applyFilters()"></div>
-    </div>
-    <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 تصدير تقرير PDF</button>
-  </div>
-
   <div id="reportArea">
       <div id="reportHeader" style="display:none; text-align:center; margin-bottom:30px; border-bottom:4px solid #2c3e50; padding-bottom:15px;">
-          <h1 style="margin:0; color:#2c3e50;">تقرير طلبات الصيانة - Eltizam</h1>
+          <h1 style="margin:0; color:#2c3e50;">تقرير طلبات الصيانة المفتوحة</h1>
           <p id="reportDate" style="margin:5px 0; font-size:14px;"></p>
       </div>
       <div id="ticketsList"></div>
@@ -95,8 +117,8 @@
     const progressText = document.getElementById("progress-text");
     let currentProgress = 0;
     const interval = setInterval(() => {
-      if (currentProgress < 95) {
-        currentProgress += (95 / 120);
+      if (currentProgress < 92) {
+        currentProgress += (92 / 120);
         progressBar.style.width = Math.floor(currentProgress) + "%";
         progressText.textContent = Math.floor(currentProgress) + "%";
       }
@@ -119,70 +141,6 @@
     } catch (e) { alert("خطأ في الاتصال"); }
   }
 
-  function renderCards(data) {
-    const list = document.getElementById("ticketsList");
-    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد بيانات.</p>"; return; }
-    
-    list.innerHTML = data.map(t => `
-      <div class="ticket-card priority-${t.Priority || 'Low'}">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:bold; font-size:16px;">وحدة: ${t["Unit Number"]}</span>
-          <span style="font-weight:bold; color:var(--success);">إنجاز: ${t["Level of Completion"] || "0%"}</span>
-        </div>
-        
-        <div style="margin: 5px 0; font-size: 11px; color: #888;">SN: ${t.SN} | ${t["Created Date"]}</div>
-        
-        <div style="margin-top:10px;">
-           <span class="category-badge">${t.Category || "عام"}</span>
-           <h3 style="color:#d35400; margin:5px 0;">${t["Case Type"]}</h3>
-        </div>
-
-        <div class="info-box"><strong>الوصف:</strong> ${t.Description || "-"}</div>
-
-        <div class="update-box">
-          <label>تغيير الحالة إلى:</label>
-          <select id="update-${t.SN}" class="update-select">
-            <option value="">-- اختر الحالة الجديدة --</option>
-            <option value="Work Completed">Work Completed</option>
-            <option value="Canceled">Canceled</option>
-          </select>
-          <button class="btn-save" onclick="saveStatus('${t.SN}')">تحديث 💾</button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  async function saveStatus(sn) {
-    const newVal = document.getElementById(`update-${sn}`).value;
-    if(!newVal) { alert("يرجى اختيار حالة أولاً"); return; }
-    
-    if(!confirm(`هل تريد تأكيد تغيير حالة الطلب ${sn} إلى ${newVal}؟`)) return;
-
-    document.getElementById('overlay').style.display = 'flex';
-    
-    try {
-      const response = await fetch("/.netlify/functions/gsheet", {
-        method: "POST",
-        body: JSON.stringify({
-          action: "update",
-          sheet: "Inspire Tickets",
-          sn: sn,
-          column: "Level of Completion", // أو "Status" حسب العمود الذي تريد تحديثه في الشيت
-          newValue: newVal
-        })
-      });
-
-      if(response.ok) {
-        alert("تم التحديث بنجاح! ✅");
-        location.reload();
-      } else { throw new Error(); }
-    } catch (e) {
-      alert("خطأ في التحديث");
-    } finally {
-      document.getElementById('overlay').style.display = 'none';
-    }
-  }
-
   function setupFilters(data) {
     const fill = (id, key) => {
       const vals = [...new Set(data.map(t => t[key]))].filter(Boolean).sort();
@@ -191,38 +149,125 @@
     };
     fill("fProj", "Project");
     fill("fComp", "Level of Completion");
+    fill("fTeam", "Res Team");
   }
 
   function applyFilters() {
     const p = document.getElementById("fProj").value;
     const c = document.getElementById("fComp").value;
+    const tVal = document.getElementById("fTeam").value;
     const search = document.getElementById("fSearch").value.toLowerCase();
+
     const filtered = originalData.filter(t => {
-      const combined = `${t.SN} ${t["Unit Number"]} ${t.Description}`.toLowerCase();
-      return (!p || t.Project === p) && (!c || t["Level of Completion"] === c) && (!search || combined.includes(search));
+      const combined = `${t.SN} ${t["Unit Number"]} ${t.Category} ${t.Description}`.toLowerCase();
+      return (!p || t.Project === p) &&
+             (!c || t["Level of Completion"] === c) &&
+             (!tVal || t["Res Team"] === tVal) &&
+             (!search || combined.includes(search));
     });
     renderCards(filtered);
+    document.getElementById("stats").textContent = `عدد النتائج: ${filtered.length}`;
+  }
+
+  function renderCards(data) {
+    const list = document.getElementById("ticketsList");
+    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد بيانات.</p>"; return; }
+    
+    list.innerHTML = data.map(t => `
+      <div class="ticket-card priority-${t.Priority || 'Low'}">
+        <div style="display:flex; justify-content:space-between;">
+          <span style="font-weight:bold; font-size:16px;">وحدة: ${t["Unit Number"] || "-"}</span>
+          <span style="font-weight:bold; color:green;">${t["Level of Completion"] || "0%"}</span>
+        </div>
+        
+        <div style="margin: 5px 0; font-size: 11px; color: #888;">SN: ${t.SN} | ${t["Created Date"]}</div>
+        
+        <div style="margin-top:10px;">
+           <span class="category-badge">تصنيف: ${t.Category || "عام"}</span>
+           <h3 style="color:#d35400; margin:5px 0;">${t["Case Type"]}</h3>
+        </div>
+
+        <div class="info-box">
+          <strong>📝 الوصف:</strong> ${t.Description || "لا يوجد وصف مسجل."}
+        </div>
+
+        <div class="card-section">
+          <div class="data-group"><strong>العميل:</strong> ${t["Reporter Name"]}<br><strong>الهاتف:</strong> ${t["Mobile Number"]}</div>
+          <div class="data-group"><strong>المشروع:</strong> ${t.Project}<br><strong>الفريق:</strong> ${t["Res Team"]}</div>
+        </div>
+
+        <div class="update-status-area">
+          <select id="sel-${t.SN}">
+            <option value="">-- تحديث الحالة --</option>
+            <option value="Work Completed">Work Completed</option>
+            <option value="Canceled">Canceled</option>
+          </select>
+          <button class="btn-update-now" onclick="updateCompletion('${t.SN}')">تحديث الحالة</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function updateCompletion(sn) {
+    const newVal = document.getElementById(`sel-${sn}`).value;
+    if(!newVal) { alert("يرجى اختيار حالة أولاً"); return; }
+    
+    if(!confirm(`هل تريد تأكيد تغيير حالة الطلب ${sn} إلى ${newVal}؟`)) return;
+
+    const overlay = document.getElementById('update-overlay');
+    overlay.style.display = 'flex';
+    
+    try {
+      const response = await fetch("/.netlify/functions/gsheet", {
+        method: "POST",
+        body: JSON.stringify({
+          action: "update",
+          sheet: "Inspire Tickets",
+          sn: sn,
+          column: "Level of Completion",
+          newValue: newVal
+        })
+      });
+
+      if(response.ok) {
+        alert("تم التحديث بنجاح! سيتم إعادة تحميل البيانات.");
+        location.reload();
+      } else {
+        alert("فشل التحديث، يرجى التأكد من اتصال الإنترنت أو إعدادات السيرفر.");
+      }
+    } catch (e) {
+      alert("حدث خطأ غير متوقع.");
+    } finally {
+      overlay.style.display = 'none';
+    }
   }
 
   function exportToPDF() {
     const element = document.getElementById('reportArea');
     const header = document.getElementById('reportHeader');
+    const pdfBtn = document.getElementById('pdfBtn');
+
     header.style.display = 'block';
+    pdfBtn.style.display = 'none';
     document.getElementById('reportDate').textContent = "تاريخ التقرير: " + new Date().toLocaleString('ar-EG');
 
     const opt = {
-      margin: [15, 10, 15, 10],
-      filename: `Report_${new Date().getTime()}.pdf`,
+      margin: [10, 5, 10, 5],
+      filename: `Eltizam_Report_${new Date().getTime()}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        logging: false,
+        letterRendering: true 
+      },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    setTimeout(() => {
-      html2pdf().set(opt).from(element).save().then(() => {
-          header.style.display = 'none';
-      });
-    }, 800);
+    html2pdf().set(opt).from(element).save().then(() => {
+        header.style.display = 'none';
+        pdfBtn.style.display = 'flex';
+    });
   }
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
