@@ -1,12 +1,22 @@
 exports.handler = async (event) => {
-  const GAS_BASE =
-    "https://script.google.com/macros/s/AKfycbwLuUVtI2MSWWpiXUozWMu-1OEULIXfReA6LxMPDS5e3xO9n8lHZQw207DJ27BiDa9F/exec";
+  const GAS_BASE = "https://script.google.com/macros/s/AKfycbxAm7OgFyiJ46qOt97XLEQ2BcUef2lsQ58YSuF6YVL3PsuO5cCQtDHOxLvVtN6nM0SF/exec";
+
+  // إعداد خيارات الطلب
+  const options = {
+    method: event.httpMethod, // سيأخذ POST أو GET حسب ما نرسله من الموقع
+    headers: { "Content-Type": "application/json" }
+  };
+
+  // إذا كان الطلب POST (تحديث)، نرسل البيانات (Body)
+  if (event.httpMethod === "POST") {
+    options.body = event.body;
+  }
 
   const qs = event.rawQuery || "";
   const target = qs ? `${GAS_BASE}?${qs}` : GAS_BASE;
 
   try {
-    const r = await fetch(target);
+    const r = await fetch(target, options);
     const text = await r.text();
 
     return {
@@ -14,19 +24,15 @@ exports.handler = async (event) => {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, max-age=300"
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
       },
       body: text
     };
   } catch (err) {
     return {
       statusCode: 502,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: JSON.stringify({ error: "Proxy fetch failed", details: String(err) })
+      body: JSON.stringify({ error: "Fetch failed", details: String(err) })
     };
   }
 };
-
