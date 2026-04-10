@@ -1,6 +1,6 @@
 exports.handler = async (event) => {
   const GAS_BASE =
-    "https://script.google.com/macros/s/AKfycbwMtciGVBDO8N7bcT03wJFW4Jb8NDVlW2omC9coa9t6Im8zSri5haEzWjmJaBulela8/exec";
+    "https://script.google.com/macros/s/AKfycbwLuUVtI2MSWWpiXUozWMu-1OEULIXfReA6LxMPDS5e3xO9n8lHZQw207DJ27BiDa9F/exec";
 
   const qs = event.rawQuery || "";
   const target = qs ? `${GAS_BASE}?${qs}` : GAS_BASE;
