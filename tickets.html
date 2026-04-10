@@ -2,81 +2,87 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Open Tickets System</title>
+  <title>Eltizam - Professional Reporting System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <style>
     :root { --primary: #2c3e50; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --bg: #f4f7f6; }
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
-    .container { max-width: 900px; margin: 20px auto; padding: 15px; }
+    .container { max-width: 1000px; margin: 20px auto; padding: 15px; }
     
-    .header-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; border-bottom: 4px solid var(--primary); }
-    .search-container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; position: sticky; top: 10px; z-index: 100; }
-    select, input { padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
-    select { background: #f9f9f9; flex: 1; cursor: pointer; }
-    input { flex: 2; min-width: 200px; }
+    /* لوحة التحكم والفلترة */
+    .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-size: 12px; font-weight: bold; color: var(--primary); }
+    
+    select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
+    
+    .btn-export { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; width: 100%; }
+    .btn-export:hover { background: #d35400; }
 
-    #loader-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0; text-align: center; }
-    .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 30px; overflow: hidden; position: relative; margin-top: 20px; border: 1px solid #ddd; }
-    #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #28a745, #85d084); transition: width 1s linear; }
-    #progress-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 16px; color: #000; text-shadow: 0 0 2px #fff; }
+    /* العداد */
+    #loader-container { background: white; padding: 40px; border-radius: 15px; text-align: center; }
+    .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 25px; overflow: hidden; position: relative; margin-top: 15px; }
+    #progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 1s linear; }
 
-    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    /* الكروت */
+    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
     .priority-High { border-right-color: var(--danger); }
     .priority-Medium { border-right-color: var(--warning); }
     .priority-Low { border-right-color: var(--success); }
     
     .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-    .data-group { background: #f8f9fa; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.6; border: 1px solid #edf0f2; }
-    .data-group.blue { background: #f0f7ff; border-color: #d0e4ff; }
-    .desc-box { background: #fffcf0; border: 1px solid #f3e5ab; padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 14px; color: #444; line-height: 1.5; }
-    
-    .badge { padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; }
-    .unit-badge { background: var(--primary); color: white; font-size: 16px; }
+    .data-group { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px; border: 1px solid #eee; }
     
     @media (max-width: 600px) { .card-section { grid-template-columns: 1fr; } }
+    
+    /* تنسيق خاص للطباعة */
+    @media print {
+        .filter-panel, .btn-export, button { display: none !important; }
+        .container { width: 100% !important; max-width: none !important; margin: 0 !important; }
+        .ticket-card { border: 1px solid #ddd !important; box-shadow: none !important; }
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <button onclick="location.href='index.html'" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold;">⬅️ العودة للرئيسية</button>
+  <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">⬅️ رجوع</button>
 
-  <div class="header-box">
-    <h2 style="margin: 0; color: var(--primary);">نظام الإدارة والرقابة - Eltizam 2026</h2>
-    <p id="stats" style="margin: 10px 0; color: #666; font-weight: 500;">يرجى الانتظار حتى اكتمال مزامنة البيانات...</p>
-  </div>
-
-  <div class="search-container" id="searchBar" style="display: none;">
-    <select id="columnSelect">
-      <option value="all">بحث في كل الحقول</option>
-      <option value="Unit Number">رقم الوحدة</option>
-      <option value="Project">المشروع</option>
-      <option value="Resource">اسم الفني</option>
-      <option value="Reporter Name">اسم العميل</option>
-      <option value="SN">رقم الطلب (SN)</option>
-      <option value="Case Type">عنوان الطلب</option>
-      <option value="Status">الحالة</option>
-    </select>
-    <input type="text" id="mainSearch" placeholder="اكتب للبحث السريع..." onkeyup="runSearch()">
+  <div class="filter-panel" id="filterPanel" style="display: none;">
+    <div class="filter-grid">
+      <div class="filter-group"><label>المشروع</label><select id="fProj" onchange="applyFilters()"><option value="">الكل</option></select></div>
+      <div class="filter-group"><label>الحالة</label><select id="fStat" onchange="applyFilters()"><option value="">الكل</option></select></div>
+      <div class="filter-group"><label>الفريق المسئول</label><select id="fTeam" onchange="applyFilters()"><option value="">الكل</option></select></div>
+      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="SN أو وحدة..." onkeyup="applyFilters()"></div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <div id="stats" style="flex: 1; font-size: 13px; font-weight: bold; color: var(--primary);"></div>
+        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 تصدير النتائج لملف PDF</button>
+    </div>
   </div>
 
   <div id="loader-container">
-    <div id="loader-text" style="font-size: 18px; color: #2c3e50;">جاري بدء الاتصال الآمن بالسيرفر...</div>
-    <div class="progress-wrapper">
-      <div id="progress-bar"></div>
-      <span id="progress-text">0%</span>
-    </div>
-    <p style="margin-top: 15px; color: #888; font-size: 13px;">تتم الآن مراجعة أكثر من 2,500 سجل فني وتقني...</p>
+    <div id="loader-text" style="font-weight:bold;">جاري مزامنة البيانات السحابية (120 ثانية)...</div>
+    <div class="progress-wrapper"><div id="progress-bar"></div><span id="progress-text" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">0%</span></div>
   </div>
 
-  <div id="ticketsList"></div>
+  <div id="reportContent">
+      <div id="reportHeader" style="display:none; text-align:center; margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:10px;">
+          <h2 style="margin:0;">تقرير الطلبات المفتوحة - Eltizam</h2>
+          <p id="reportDate" style="margin:5px 0; font-size:12px;"></p>
+      </div>
+      <div id="ticketsList"></div>
+  </div>
 </div>
 
 <script>
-  // 1. إعدادات Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBbqIcYOl_S8vOOK_Nxdf2FQbETE1pdSWw",
     authDomain: "unit-check-684a5.firebaseapp.com",
@@ -90,132 +96,111 @@
   let originalData = [];
 
   firebase.auth().onAuthStateChanged(user => {
-    if (user) { fetchEltizamData(); } 
-    else { window.location.href = "index.html"; }
+    if (user) fetchEltizamData(); 
+    else window.location.href = "index.html";
   });
 
-  // 2. دالة السحب والتحميل الموزع على 120 ثانية
   async function fetchEltizamData() {
     const progressBar = document.getElementById("progress-bar");
     const progressText = document.getElementById("progress-text");
-    const loaderText = document.getElementById("loader-text");
-    
     let currentProgress = 0;
-    const duration = 120; // 120 ثانية (دقيقتين)
-    const targetSimulated = 92; // يصل لـ 92% وينتظر الاستجابة الحقيقية
-    
-    // التكرار كل ثانية
+
     const interval = setInterval(() => {
-      if (currentProgress < targetSimulated) {
-        // زيادة بمقدار 0.76% تقريباً كل ثانية ليصل لـ 92% في دقيقتين
-        currentProgress += (targetSimulated / duration);
-        if (currentProgress > targetSimulated) currentProgress = targetSimulated;
-        
-        updateDisplay(currentProgress);
+      if (currentProgress < 92) {
+        currentProgress += (92 / 120);
+        progressBar.style.width = Math.floor(currentProgress) + "%";
+        progressText.textContent = Math.floor(currentProgress) + "%";
       }
     }, 1000);
 
-    function updateDisplay(val) {
-      const rounded = Math.floor(val);
-      progressBar.style.width = rounded + "%";
-      progressText.textContent = rounded + "%";
-      
-      if(rounded > 10) loaderText.textContent = "جاري تجميع البيانات من السجلات السحابية...";
-      if(rounded > 40) loaderText.textContent = "تحليل حالة الطلبات المفتوحة (Open Tickets)...";
-      if(rounded > 70) loaderText.textContent = "تنسيق مصفوفة البيانات والعناوين الفنية...";
-      if(rounded > 85) loaderText.textContent = "اللمسات النهائية لعرض لوحة التحكم...";
-    }
-
     try {
-      // طلب الداتا الحقيقي
       const res = await fetch("/.netlify/functions/gsheet?sheet=Inspire Tickets&all=1");
       const json = await res.json();
       
-      // بمجرد وصول الداتا، ننهي العداد ونقفز لـ 100%
       clearInterval(interval);
-      progressBar.style.transition = "width 0.5s ease-out";
-      updateDisplay(100);
+      progressBar.style.width = "100%";
+      progressText.textContent = "100%";
 
       setTimeout(() => {
         originalData = json.data.filter(t => t.Status !== "Completed" && t.SN);
+        setupFilters(originalData);
         renderCards(originalData);
         document.getElementById("loader-container").style.display = "none";
-        document.getElementById("searchBar").style.display = "flex";
-        document.getElementById("stats").textContent = `تم بنجاح مزامنة (${originalData.length}) طلب مفتوح`;
-      }, 800);
-
-    } catch (e) {
-      clearInterval(interval);
-      loaderText.textContent = "❌ حدث خطأ في الشبكة، يرجى إعادة المحاولة.";
-      loaderText.style.color = "red";
-    }
+        document.getElementById("filterPanel").style.display = "block";
+      }, 500);
+    } catch (e) { alert("فشل في جلب البيانات"); }
   }
 
-  // 3. عرض الكروت الشاملة (20+ حقل)
+  function setupFilters(data) {
+    const fill = (id, key) => {
+      const vals = [...new Set(data.map(t => t[key]))].filter(Boolean).sort();
+      const el = document.getElementById(id);
+      vals.forEach(v => el.add(new Option(v, v)));
+    };
+    fill("fProj", "Project");
+    fill("fStat", "Status");
+    fill("fTeam", "Res Team");
+  }
+
+  function applyFilters() {
+    const p = document.getElementById("fProj").value;
+    const s = document.getElementById("fStat").value;
+    const tVal = document.getElementById("fTeam").value;
+    const search = document.getElementById("fSearch").value.toLowerCase();
+
+    const filtered = originalData.filter(t => {
+      return (!p || t.Project === p) &&
+             (!s || t.Status === s) &&
+             (!tVal || t["Res Team"] === tVal) &&
+             (!search || `${t.SN} ${t["Unit Number"]} ${t["Reporter Name"]}`.toLowerCase().includes(search));
+    });
+
+    renderCards(filtered);
+    document.getElementById("stats").textContent = `عدد النتائج: ${filtered.length}`;
+  }
+
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
-    if(data.length === 0) { list.innerHTML = "<p style='text-align:center;'>لا توجد نتائج مطابقة لبحثك.</p>"; return; }
+    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد نتائج.</p>"; return; }
     
     list.innerHTML = data.map(t => `
       <div class="ticket-card priority-${t.Priority || 'Low'}">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
-          <span class="badge unit-badge">وحدة ${t["Unit Number"] || "-"}</span>
-          <span style="font-weight:bold; color:#2c3e50; background:#f0f0f0; padding:3px 8px; border-radius:4px;">SN: ${t.SN}</span>
+        <div style="display:flex; justify-content:space-between; font-weight:bold; color:var(--primary);">
+          <span>وحدة: ${t["Unit Number"] || "-"}</span>
+          <span>SN: ${t.SN}</span>
         </div>
-
-        <h3 style="color:#d35400; margin:15px 0 5px 0; font-size:20px;">${t["Case Type"] || "طلب صيانة"}</h3>
-        <div style="font-size:12px; color:#888;">تاريخ الإنشاء: ${t["Created Date"] || "-"} | المصدر: ${t["Call Source"] || "-"}</div>
-
-        <div class="desc-box">
-            <strong>📝 وصف العميل:</strong><br>
-            ${t.Description || "لا يوجد وصف مسجل لهذه الحالة."}
-        </div>
-
+        <h4 style="color:#d35400; margin:10px 0;">${t["Case Type"]}</h4>
         <div class="card-section">
-          <div class="data-group">
-            <strong>👤 بيانات العميل ومقدم البلاغ:</strong><br>
-            الاسم: ${t["Reporter Name"] || "-"}<br>
-            الموبايل: <a href="tel:${t["Mobile Number"]}">${t["Mobile Number"] || "-"}</a><br>
-            النوع: ${t["Reporter Type"] || "-"}<br>
-            الإيميل: ${t.Email || "-"}
-          </div>
-          <div class="data-group blue">
-            <strong>🏢 الموقع الجغرافي:</strong><br>
-            المشروع: ${t.Project || "-"}<br>
-            المنطقة (Zone): ${t["Zone Name"] || "-"}<br>
-            المبنى/الدور: ${t["Building Number"] || "-"} / ${t["Floor Code"] || "-"}
-          </div>
+          <div class="data-group"><strong>العميل:</strong> ${t["Reporter Name"]}<br><strong>هاتف:</strong> ${t["Mobile Number"]}</div>
+          <div class="data-group"><strong>المشروع:</strong> ${t.Project}<br><strong>الحالة:</strong> ${t.Status}</div>
         </div>
-
-        <div class="card-section">
-          <div class="data-group">
-            <strong>🛠️ تفاصيل التنفيذ:</strong><br>
-            الفني: <mark style="background:#fff2ac; padding:0 4px;">${t.Resource || "قيد التعيين"}</mark><br>
-            فريق الدعم: ${t["Res Team"] || "-"}<br>
-            نسبة الإنجاز: ${t["Level of Completion"] || "0%"}
-          </div>
-          <div class="data-group blue">
-            <strong>📊 التصنيف والحالة:</strong><br>
-            الفئة: ${t.Category || "-"}<br>
-            الأولوية: ${t.Priority || "Medium"}<br>
-            الحالة: <span style="color:#27ae60; font-weight:bold;">${t.Status || "-"}</span>
-          </div>
+        <div style="margin-top:10px; background:#f0f7ff; padding:10px; border-radius:8px; font-size:13px;">
+          <strong>الفريق المسئول:</strong> <mark>${t["Res Team"] || "غير محدد"}</mark>
         </div>
-
-        ${t["Customer Feedback"] ? `<div style="margin-top:12px; font-size:13px; background:#e8f5e9; padding:10px; border-radius:8px; border-right:4px solid #2ecc71;">💬 <strong>تقييم العميل:</strong> ${t["Customer Feedback"]}</div>` : ""}
       </div>
     `).join('');
   }
 
-  function runSearch() {
-    const query = document.getElementById("mainSearch").value.toLowerCase();
-    const col = document.getElementById("columnSelect").value;
-    const filtered = originalData.filter(t => {
-      if (col === "all") return Object.values(t).some(v => String(v).toLowerCase().includes(query));
-      return String(t[col] || "").toLowerCase().includes(query);
+  // دالة تصدير الـ PDF
+  function exportToPDF() {
+    const element = document.getElementById('reportContent');
+    const header = document.getElementById('reportHeader');
+    
+    // إظهار الهيدر مؤقتاً للتقرير فقط
+    header.style.display = 'block';
+    document.getElementById('reportDate').textContent = "تاريخ التقرير: " + new Date().toLocaleString('ar-EG');
+
+    const opt = {
+      margin:       10,
+      filename:     `Eltizam_Report_${new Date().getTime()}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        header.style.display = 'none'; // إخفاء الهيدر بعد الانتهاء
     });
-    renderCards(filtered);
-    document.getElementById("stats").textContent = `نتائج البحث: ${filtered.length} طلب`;
   }
 </script>
 </body>
