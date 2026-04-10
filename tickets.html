@@ -2,62 +2,81 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Open Tickets</title>
+  <title>Eltizam - Open Tickets System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   
   <style>
-    :root { --primary: #2c3e50; --success: #28a745; --danger: #dc3545; --warning: #ffc107; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; direction: rtl; }
-    .container { max-width: 800px; margin: 20px auto; padding: 15px; }
+    :root { --primary: #2c3e50; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --bg: #f4f7f6; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
+    .container { max-width: 900px; margin: 20px auto; padding: 15px; }
     
-    /* الهيدر والبحث */
-    .header-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
-    .search-container { position: sticky; top: 10px; z-index: 100; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input[type="text"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; }
-    input[type="text"]:focus { border-color: var(--primary); }
+    .header-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; border-bottom: 4px solid var(--primary); }
+    .search-container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; position: sticky; top: 10px; z-index: 100; }
+    select, input { padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+    select { background: #f9f9f9; flex: 1; cursor: pointer; }
+    input { flex: 2; min-width: 200px; }
 
-    /* الكروت */
-    .ticket-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-right: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.3s; }
+    #loader-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0; text-align: center; }
+    .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 30px; overflow: hidden; position: relative; margin-top: 20px; border: 1px solid #ddd; }
+    #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #28a745, #85d084); transition: width 1s linear; }
+    #progress-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 16px; color: #000; text-shadow: 0 0 2px #fff; }
+
+    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .priority-High { border-right-color: var(--danger); }
     .priority-Medium { border-right-color: var(--warning); }
     .priority-Low { border-right-color: var(--success); }
-
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .unit-badge { background: var(--primary); color: white; padding: 4px 12px; border-radius: 6px; font-weight: bold; font-size: 14px; }
-    .status-tag { font-size: 12px; padding: 4px 10px; border-radius: 20px; background: #e9f5e9; color: var(--success); font-weight: bold; }
     
-    .case-title { font-size: 18px; font-weight: bold; color: #333; margin: 10px 0; }
-    .desc-box { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 14px; color: #444; border: 1px solid #eee; line-height: 1.5; }
+    .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .data-group { background: #f8f9fa; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.6; border: 1px solid #edf0f2; }
+    .data-group.blue { background: #f0f7ff; border-color: #d0e4ff; }
+    .desc-box { background: #fffcf0; border: 1px solid #f3e5ab; padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 14px; color: #444; line-height: 1.5; }
     
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; color: #666; margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 10px; }
+    .badge { padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; }
+    .unit-badge { background: var(--primary); color: white; font-size: 16px; }
     
-    .btn-back { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
-    #loader { text-align: center; padding: 40px; color: var(--primary); font-weight: bold; }
+    @media (max-width: 600px) { .card-section { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <button class="btn-back" onclick="location.href='index.html'">⬅️ العودة للقائمة الرئيسية</button>
-  
+  <button onclick="location.href='index.html'" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold;">⬅️ العودة للرئيسية</button>
+
   <div class="header-box">
-    <img src="https://github.com/Nour431998/unit-check/blob/main/Picture2.png?raw=true" style="max-height: 50px; margin-bottom: 10px;" />
-    <h2 style="margin:0;">Open Tickets - Eltizam</h2>
-    <p id="stats" style="color: #666;">جاري تحديث البيانات من النظام...</p>
+    <h2 style="margin: 0; color: var(--primary);">نظام الإدارة والرقابة - Eltizam 2026</h2>
+    <p id="stats" style="margin: 10px 0; color: #666; font-weight: 500;">يرجى الانتظار حتى اكتمال مزامنة البيانات...</p>
   </div>
 
-  <div class="search-container">
-    <input type="text" id="mainSearch" placeholder="بحث سريع (رقم وحدة، اسم فني، نوع عطل...)" onkeyup="runSearch()">
+  <div class="search-container" id="searchBar" style="display: none;">
+    <select id="columnSelect">
+      <option value="all">بحث في كل الحقول</option>
+      <option value="Unit Number">رقم الوحدة</option>
+      <option value="Project">المشروع</option>
+      <option value="Resource">اسم الفني</option>
+      <option value="Reporter Name">اسم العميل</option>
+      <option value="SN">رقم الطلب (SN)</option>
+      <option value="Case Type">عنوان الطلب</option>
+      <option value="Status">الحالة</option>
+    </select>
+    <input type="text" id="mainSearch" placeholder="اكتب للبحث السريع..." onkeyup="runSearch()">
   </div>
 
-  <div id="loader">🔄 جاري سحب الطلبات المفتوحة حالياً...</div>
+  <div id="loader-container">
+    <div id="loader-text" style="font-size: 18px; color: #2c3e50;">جاري بدء الاتصال الآمن بالسيرفر...</div>
+    <div class="progress-wrapper">
+      <div id="progress-bar"></div>
+      <span id="progress-text">0%</span>
+    </div>
+    <p style="margin-top: 15px; color: #888; font-size: 13px;">تتم الآن مراجعة أكثر من 2,500 سجل فني وتقني...</p>
+  </div>
+
   <div id="ticketsList"></div>
 </div>
 
 <script>
-  // --- ضع بيانات Firebase Config الخاصة بك هنا ---
+  // 1. إعدادات Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBbqIcYOl_S8vOOK_Nxdf2FQbETE1pdSWw",
     authDomain: "unit-check-684a5.firebaseapp.com",
@@ -66,76 +85,137 @@
     messagingSenderId: "963222945184",
     appId: "1:963222945184:web:fe8f5aa1793228157fb8c5"
   };
-
   firebase.initializeApp(firebaseConfig);
 
-  // التحقق من تسجيل الدخول قبل عرض البيانات
+  let originalData = [];
+
   firebase.auth().onAuthStateChanged(user => {
-    if (user) { 
-      fetchEltizamData(); 
-    } else { 
-      window.location.href = "index.html"; 
-    }
+    if (user) { fetchEltizamData(); } 
+    else { window.location.href = "index.html"; }
   });
 
+  // 2. دالة السحب والتحميل الموزع على 120 ثانية
   async function fetchEltizamData() {
-    // نطلب الشيت الجديد (Inspire Tickets) مع باراميتر all=1 لجلب كل الداتا دفعة واحدة للبحث السريع
-    const url = "/.netlify/functions/gsheet?sheet=Inspire Tickets&all=1"; 
+    const progressBar = document.getElementById("progress-bar");
+    const progressText = document.getElementById("progress-text");
+    const loaderText = document.getElementById("loader-text");
     
-    try {
-      const r = await fetch(url);
-      const json = await r.json();
-      const allData = json.data;
+    let currentProgress = 0;
+    const duration = 120; // 120 ثانية (دقيقتين)
+    const targetSimulated = 92; // يصل لـ 92% وينتظر الاستجابة الحقيقية
+    
+    // التكرار كل ثانية
+    const interval = setInterval(() => {
+      if (currentProgress < targetSimulated) {
+        // زيادة بمقدار 0.76% تقريباً كل ثانية ليصل لـ 92% في دقيقتين
+        currentProgress += (targetSimulated / duration);
+        if (currentProgress > targetSimulated) currentProgress = targetSimulated;
+        
+        updateDisplay(currentProgress);
+      }
+    }, 1000);
 
-      // فلترة: استبعاد الطلبات المكتملة (Completed)
-      const openTickets = allData.filter(item => item.Status !== "Completed" && item.SN);
+    function updateDisplay(val) {
+      const rounded = Math.floor(val);
+      progressBar.style.width = rounded + "%";
+      progressText.textContent = rounded + "%";
       
-      renderCards(openTickets);
-      document.getElementById("loader").style.display = "none";
-      document.getElementById("stats").textContent = `يوجد حالياً (${openTickets.length}) طلب قيد التنفيذ`;
+      if(rounded > 10) loaderText.textContent = "جاري تجميع البيانات من السجلات السحابية...";
+      if(rounded > 40) loaderText.textContent = "تحليل حالة الطلبات المفتوحة (Open Tickets)...";
+      if(rounded > 70) loaderText.textContent = "تنسيق مصفوفة البيانات والعناوين الفنية...";
+      if(rounded > 85) loaderText.textContent = "اللمسات النهائية لعرض لوحة التحكم...";
+    }
+
+    try {
+      // طلب الداتا الحقيقي
+      const res = await fetch("/.netlify/functions/gsheet?sheet=Inspire Tickets&all=1");
+      const json = await res.json();
+      
+      // بمجرد وصول الداتا، ننهي العداد ونقفز لـ 100%
+      clearInterval(interval);
+      progressBar.style.transition = "width 0.5s ease-out";
+      updateDisplay(100);
+
+      setTimeout(() => {
+        originalData = json.data.filter(t => t.Status !== "Completed" && t.SN);
+        renderCards(originalData);
+        document.getElementById("loader-container").style.display = "none";
+        document.getElementById("searchBar").style.display = "flex";
+        document.getElementById("stats").textContent = `تم بنجاح مزامنة (${originalData.length}) طلب مفتوح`;
+      }, 800);
+
     } catch (e) {
-      document.getElementById("loader").innerHTML = "❌ فشل في جلب البيانات. يرجى التأكد من اتصال الإنترنت أو إعدادات السكريبت.";
+      clearInterval(interval);
+      loaderText.textContent = "❌ حدث خطأ في الشبكة، يرجى إعادة المحاولة.";
+      loaderText.style.color = "red";
     }
   }
 
+  // 3. عرض الكروت الشاملة (20+ حقل)
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
-    list.innerHTML = "";
+    if(data.length === 0) { list.innerHTML = "<p style='text-align:center;'>لا توجد نتائج مطابقة لبحثك.</p>"; return; }
+    
+    list.innerHTML = data.map(t => `
+      <div class="ticket-card priority-${t.Priority || 'Low'}">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
+          <span class="badge unit-badge">وحدة ${t["Unit Number"] || "-"}</span>
+          <span style="font-weight:bold; color:#2c3e50; background:#f0f0f0; padding:3px 8px; border-radius:4px;">SN: ${t.SN}</span>
+        </div>
 
-    if (data.length === 0) {
-      list.innerHTML = "<p style='text-align:center; color:#999;'>لا توجد طلبات مفتوحة حالياً.</p>";
-      return;
-    }
+        <h3 style="color:#d35400; margin:15px 0 5px 0; font-size:20px;">${t["Case Type"] || "طلب صيانة"}</h3>
+        <div style="font-size:12px; color:#888;">تاريخ الإنشاء: ${t["Created Date"] || "-"} | المصدر: ${t["Call Source"] || "-"}</div>
 
-    data.forEach(t => {
-      list.innerHTML += `
-        <div class="ticket-card priority-${t.Priority || 'Low'}">
-          <div class="card-top">
-            <span class="unit-badge">وحدة ${t["Unit Number"] || "N/A"}</span>
-            <span class="status-tag">${t.Status}</span>
+        <div class="desc-box">
+            <strong>📝 وصف العميل:</strong><br>
+            ${t.Description || "لا يوجد وصف مسجل لهذه الحالة."}
+        </div>
+
+        <div class="card-section">
+          <div class="data-group">
+            <strong>👤 بيانات العميل ومقدم البلاغ:</strong><br>
+            الاسم: ${t["Reporter Name"] || "-"}<br>
+            الموبايل: <a href="tel:${t["Mobile Number"]}">${t["Mobile Number"] || "-"}</a><br>
+            النوع: ${t["Reporter Type"] || "-"}<br>
+            الإيميل: ${t.Email || "-"}
           </div>
-          <div class="case-title">${t["Case Type"] || "طلب عام"} - ${t["Case Sub-Type"] || ""}</div>
-          <div class="desc-box">${t.Description || "لا يوجد وصف تفصيلي للمشكلة."}</div>
-          <div class="details-grid">
-            <span><strong>المشروع:</strong> ${t.Project || "-"}</span>
-            <span><strong>الفني المسئول:</strong> ${t.Resource || "لم يحدد بعد"}</span>
-            <span><strong>الأولوية:</strong> ${t.Priority || "Low"}</span>
-            <span><strong>تاريخ الفتح:</strong> ${t.Timestamp || "-"}</span>
+          <div class="data-group blue">
+            <strong>🏢 الموقع الجغرافي:</strong><br>
+            المشروع: ${t.Project || "-"}<br>
+            المنطقة (Zone): ${t["Zone Name"] || "-"}<br>
+            المبنى/الدور: ${t["Building Number"] || "-"} / ${t["Floor Code"] || "-"}
           </div>
         </div>
-      `;
-    });
+
+        <div class="card-section">
+          <div class="data-group">
+            <strong>🛠️ تفاصيل التنفيذ:</strong><br>
+            الفني: <mark style="background:#fff2ac; padding:0 4px;">${t.Resource || "قيد التعيين"}</mark><br>
+            فريق الدعم: ${t["Res Team"] || "-"}<br>
+            نسبة الإنجاز: ${t["Level of Completion"] || "0%"}
+          </div>
+          <div class="data-group blue">
+            <strong>📊 التصنيف والحالة:</strong><br>
+            الفئة: ${t.Category || "-"}<br>
+            الأولوية: ${t.Priority || "Medium"}<br>
+            الحالة: <span style="color:#27ae60; font-weight:bold;">${t.Status || "-"}</span>
+          </div>
+        </div>
+
+        ${t["Customer Feedback"] ? `<div style="margin-top:12px; font-size:13px; background:#e8f5e9; padding:10px; border-radius:8px; border-right:4px solid #2ecc71;">💬 <strong>تقييم العميل:</strong> ${t["Customer Feedback"]}</div>` : ""}
+      </div>
+    `).join('');
   }
 
-  // وظيفة البحث اللحظي
   function runSearch() {
     const query = document.getElementById("mainSearch").value.toLowerCase();
-    const cards = document.getElementsByClassName("ticket-card");
-    
-    for (let i = 0; i < cards.length; i++) {
-      const content = cards[i].innerText.toLowerCase();
-      cards[i].style.display = content.includes(query) ? "block" : "none";
-    }
+    const col = document.getElementById("columnSelect").value;
+    const filtered = originalData.filter(t => {
+      if (col === "all") return Object.values(t).some(v => String(v).toLowerCase().includes(query));
+      return String(t[col] || "").toLowerCase().includes(query);
+    });
+    renderCards(filtered);
+    document.getElementById("stats").textContent = `نتائج البحث: ${filtered.length} طلب`;
   }
 </script>
 </body>
