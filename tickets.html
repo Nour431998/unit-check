@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Interactive Analytics & Updates</title>
+  <title>Eltizam - Smooth Analytics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -19,22 +19,26 @@
     .stat-card-small { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary); transition: transform 0.2s; cursor: pointer; }
     .stat-card-small:hover { transform: translateY(-3px); }
     .stat-card-small h4 { margin: 0; font-size: 11px; color: #7f8c8d; }
-    .stat-card-small .val { font-size: 20px; font-weight: bold; color: var(--primary); }
+    .stat-card-small .val { font-size: 20px; font-weight: bold; color: var(--primary); transition: all 0.5s ease; } /* تأثير حركي للأرقام */
 
     .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px; }
     .chart-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: 280px; position: relative; }
-    .chart-box h5 { margin: 0 0 10px 0; font-size: 14px; text-align: center; }
+    .chart-box h5 { margin: 0 0 10px 0; font-size: 14px; text-align: center; color: var(--primary); }
 
-    .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; transition: border 0.3s; }
-    .filter-active { border: 2px solid #3498db; background: #f0faff; }
+    .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; transition: all 0.4s ease; border: 2px solid transparent; }
+    .filter-active { border: 2px solid #3498db; background: #f4fbff; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2); }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-size: 12px; font-weight: bold; color: var(--primary); }
     
-    select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; background: white; }
+    select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; background: white; transition: border 0.3s; }
+    select:focus, input:focus { border-color: #3498db; }
     .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
-    .sn-text { font-size: 16px; font-weight: bold; color: #555; background: #eee; padding: 2px 8px; border-radius: 4px; }
+    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; transition: transform 0.2s; }
+    .ticket-card:hover { transform: scale(1.01); }
+    
+    .sn-text { font-size: 16px; font-weight: bold; color: #333; background: #eee; padding: 3px 10px; border-radius: 5px; }
     
     .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .data-group { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px; border: 1px solid #eee; }
@@ -43,10 +47,10 @@
     .update-status-area { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; display: flex; gap: 10px; align-items: center; }
     .btn-update-now { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
     
-    #update-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: center; justify-content: center; flex-direction: column; color: white; }
-    #loader-container { background: white; padding: 40px; text-align: center; border-radius: 15px; }
+    #update-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: center; justify-content: center; flex-direction: column; color: white; backdrop-filter: blur(2px); }
+    #loader-container { background: white; padding: 40px; text-align: center; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 25px; overflow: hidden; position: relative; margin-top: 15px; }
-    #progress-bar { width: 0%; height: 100%; background: var(--success); }
+    #progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 0.5s ease; }
 
     @media print { .filter-panel, .btn-export, button, .update-status-area, .dashboard-section { display: none !important; } }
   </style>
@@ -54,12 +58,12 @@
 <body>
 
 <div id="update-overlay">
-    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #e67e22; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
-    <span>جاري تحديث الحالة...</span>
+    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #e67e22; border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
+    <span style="font-weight: bold; font-size: 16px;">جاري تحديث الحالة...</span>
 </div>
 
 <div class="container">
-  <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">⬅️ القائمة الرئيسية</button>
+  <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold;">⬅️ القائمة الرئيسية</button>
 
   <div id="dashboardSection" style="display:none;">
     <div class="dashboard-grid">
@@ -71,9 +75,9 @@
     </div>
     
     <div class="charts-row">
-      <div class="chart-box"><h5>توزيع الشهور</h5><canvas id="chartMonths"></canvas></div>
-      <div class="chart-box"><h5>حسب المشروع</h5><canvas id="chartProjects"></canvas></div>
-      <div class="chart-box"><h5>حسب التصنيف</h5><canvas id="chartCats"></canvas></div>
+      <div class="chart-box"><h5>الطلبات شهرياً</h5><canvas id="chartMonths"></canvas></div>
+      <div class="chart-box"><h5>الطلبات حسب المشروع</h5><canvas id="chartProjects"></canvas></div>
+      <div class="chart-box"><h5>توزيع التصنيفات</h5><canvas id="chartCats"></canvas></div>
     </div>
   </div>
 
@@ -86,14 +90,14 @@
       <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="رقم الوحدة، SN..." onkeyup="applyFilters()"></div>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
-        <div id="stats" style="flex: 1; font-weight: bold; color: #3498db;"></div>
-        <button onclick="resetAllFilters()">ضبط 🔄</button>
-        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 PDF</button>
+        <div id="stats" style="flex: 1; font-weight: bold; color: #3498db; font-size: 15px;"></div>
+        <button onclick="resetAllFilters()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold;">إعادة ضبط 🔄</button>
+        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn" style="width: auto; padding: 10px 20px;">📄 تقرير PDF</button>
     </div>
   </div>
 
   <div id="loader-container">
-    <div style="font-weight:bold;">جاري مزامنة بيانات "التزام"...</div>
+    <div style="font-weight:bold; font-size: 16px; color: var(--primary);">جاري مزامنة بيانات "التزام"...</div>
     <div class="progress-wrapper"><div id="progress-bar"></div></div>
   </div>
 
@@ -131,17 +135,19 @@
       setTimeout(() => {
         originalData = json.data.filter(t => t.Status !== "Completed" && t.SN);
         setupFilters(originalData);
-        updateDashboard(originalData);
+        updateDashboard(originalData); // الرسم لأول مرة
         renderCards(originalData);
         document.getElementById("loader-container").style.display = "none";
         document.getElementById("dashboardSection").style.display = "block";
         document.getElementById("filterPanel").style.display = "block";
       }, 500);
-    } catch (e) { alert("خطأ اتصال"); }
+    } catch (e) { alert("حدث خطأ أثناء جلب البيانات، يرجى تحديث الصفحة."); }
   }
 
   function updateDashboard(data) {
     document.getElementById("d-total").textContent = data.length;
+    
+    // تحديث كروت الأقسام (تحديث الأرقام فقط لتكون سلسة)
     const container = document.getElementById("dept-stats-container");
     container.innerHTML = "";
     const counts = {};
@@ -149,11 +155,17 @@
     Object.keys(counts).sort().forEach(d => {
       const card = document.createElement("div");
       card.className = "stat-card-small";
-      card.onclick = () => { document.getElementById("fTeam").value = d; applyFilters(); };
+      // التفاعل مع الكارت (Toggle)
+      card.onclick = () => { 
+          const teamEl = document.getElementById("fTeam");
+          teamEl.value = (teamEl.value === d) ? "" : d; // Toggle logic
+          applyFilters(); 
+      };
       card.innerHTML = `<h4>${d}</h4><div class="val">${counts[d]}</div>`;
       container.appendChild(card);
     });
 
+    // تجهيز بيانات الرسوم البيانية
     const mData = {};
     data.forEach(t => {
       const d = new Date(t["Created Date"]);
@@ -163,37 +175,79 @@
       }
     });
     const sm = Object.keys(mData).sort();
-    renderChart('chartMonths', 'line', sm, sm.map(m => mData[m]), 'الطلبات', '#3498db', 'date');
-
+    
     const pData = {};
     data.forEach(t => pData[t.Project] = (pData[t.Project] || 0) + 1);
-    renderChart('chartProjects', 'bar', Object.keys(pData), Object.values(pData), 'المشروع', '#e67e22', 'project');
-
+    
     const cData = {};
     data.forEach(t => { const c = t.Category || "عام"; cData[c] = (cData[c] || 0) + 1; });
-    renderChart('chartCats', 'pie', Object.keys(cData), Object.values(cData), 'التصنيف', null, 'category');
+
+    // استدعاء دالة الرسم السلسة
+    renderChartSmooth('chartMonths', 'line', sm, sm.map(m => mData[m]), 'الطلبات', '#3498db', 'date');
+    renderChartSmooth('chartProjects', 'bar', Object.keys(pData), Object.values(pData), 'المشروع', '#e67e22', 'project');
+    renderChartSmooth('chartCats', 'pie', Object.keys(cData), Object.values(cData), 'التصنيف', null, 'category');
   }
 
-  function renderChart(id, type, labels, values, title, color, fKey) {
-    if(charts[id]) charts[id].destroy();
-    charts[id] = new Chart(document.getElementById(id), {
-        type: type,
-        data: { labels: labels, datasets: [{ label: title, data: values, backgroundColor: type === 'pie' ? ['#2ecc71', '#e74c3c', '#3498db', '#f1c40f', '#9b59b6'] : color, borderColor: color, tension: 0.3, fill: type === 'line' }] },
-        options: { 
-          maintainAspectRatio: false,
-          onClick: (e, el) => { if(el.length > 0) handleChartClick(fKey, labels[el[0].index]); },
-          plugins: { legend: { display: type === 'pie' } },
-          scales: type !== 'pie' ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } } : {}
-        }
-    });
+  // الدالة الجديدة للرسم السلس (Animation Update)
+  function renderChartSmooth(id, type, labels, values, title, color, fKey) {
+    // إذا كان الرسم البياني موجوداً، قم بتحديث بياناته فقط بحركة سلسة
+    if(charts[id]) {
+        charts[id].data.labels = labels;
+        charts[id].data.datasets[0].data = values;
+        charts[id].update(); // <--- السر هنا: لا نقوم بحذفه بل نحدثه
+    } else {
+        // إنشاء الرسم البياني لأول مرة
+        charts[id] = new Chart(document.getElementById(id), {
+            type: type,
+            data: { 
+                labels: labels, 
+                datasets: [{ 
+                    label: title, 
+                    data: values, 
+                    backgroundColor: type === 'pie' ? ['#2ecc71', '#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#1abc9c'] : color, 
+                    borderColor: color, 
+                    tension: 0.3, 
+                    fill: type === 'line' 
+                }] 
+            },
+            options: { 
+              maintainAspectRatio: false,
+              animation: { duration: 600, easing: 'easeOutQuart' }, // جعل الحركة ناعمة
+              onClick: (e, el) => { 
+                  if(el.length > 0) {
+                      // جلب النص الخاص بالعمود المضغوط
+                      const labelClicked = charts[id].data.labels[el[0].index];
+                      handleChartClick(fKey, labelClicked); 
+                  }
+              },
+              plugins: { legend: { display: type === 'pie' } },
+              scales: type !== 'pie' ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } } : {}
+            }
+        });
+    }
   }
 
   function handleChartClick(k, v) {
-    if(k === 'project') document.getElementById("fProj").value = v;
-    if(k === 'category') document.getElementById("fCat").value = v;
-    if(k === 'date') document.getElementById("fSearch").value = v;
-    document.getElementById("filterPanel").classList.add("filter-active");
-    setTimeout(() => document.getElementById("filterPanel").classList.remove("filter-active"), 800);
+    let targetElement;
+    if(k === 'project') targetElement = document.getElementById("fProj");
+    if(k === 'category') targetElement = document.getElementById("fCat");
+    if(k === 'date') targetElement = document.getElementById("fSearch");
+
+    // Toggle Logic: إذا كان الفلتر مفعلاً بنفس القيمة التي ضغطت عليها، قم بإلغائه
+    if(targetElement) {
+        if(targetElement.value === v) {
+            targetElement.value = ""; // إلغاء التحديد
+        } else {
+            targetElement.value = v; // تفعيل التحديد
+        }
+    }
+
+    // تأثير بصري للوحة الفلاتر للتنبيه بتغيرها
+    const panel = document.getElementById("filterPanel");
+    panel.classList.add("filter-active");
+    setTimeout(() => panel.classList.remove("filter-active"), 600);
+    
+    // تطبيق الفلاتر
     applyFilters();
   }
 
@@ -219,31 +273,37 @@
       return (!p || t.Project === p) && (!c || t["Level of Completion"] === c) && (!tVal || t["Res Team"] === tVal) && (!cat || t.Category === cat) && (!s || comb.includes(s));
     });
     
-    // الحل هنا: استدعاء updateDashboard بدلاً من تحديث الأرقام فقط لضمان تفاعل الرسم البياني
+    // تحديث الشاشة بالبيانات الجديدة (سيتم عمل Animation تلقائي بفضل التعديل)
     updateDashboard(filtered); 
     renderCards(filtered);
-    document.getElementById("stats").textContent = `النتائج: ${filtered.length}`;
+    document.getElementById("stats").innerHTML = `النتائج المتاحة: <span style="background:#e3f2fd; padding:3px 8px; border-radius:5px;">${filtered.length} طلب</span>`;
   }
 
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
-    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا يوجد نتائج.</p>"; return; }
+    if(!data.length) { list.innerHTML = "<p style='text-align:center; padding:30px; font-weight:bold; color:#777;'>لا يوجد نتائج مطابقة لهذه الفلاتر.</p>"; return; }
+    
     list.innerHTML = data.map(t => `
       <div class="ticket-card" style="border-right: 8px solid ${t.Priority === 'High' ? '#dc3545' : t.Priority === 'Medium' ? '#ffc107' : '#28a745'}">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:bold;">وحدة: ${t["Unit Number"] || "-"}</span>
+          <span style="font-weight:bold; font-size:18px;">الوحدة: ${t["Unit Number"] || "-"}</span>
           <span class="sn-text">SN: ${t.SN}</span>
         </div>
-        <div style="margin: 8px 0; font-size: 12px; color: #666;">التاريخ: ${t["Created Date"]} | الحالة: <span style="color:green; font-weight:bold;">${t["Level of Completion"] || "0%"}</span></div>
-        <div style="margin-top:10px;"><h3 style="color:#d35400; margin:0;">${t["Case Type"]}</h3></div>
-        <div class="info-box">${t.Description || "لا يوجد وصف."}</div>
+        <div style="margin: 8px 0; font-size: 13px; color: #666;">
+            📅 ${t["Created Date"]} | نسبة الإنجاز: <span style="color:green; font-weight:bold;">${t["Level of Completion"] || "0%"}</span>
+        </div>
+        <div style="margin-top:10px;">
+            <span style="background:#e3f2fd; color:#1565c0; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:12px;">${t.Category || "عام"}</span>
+            <h3 style="color:#d35400; margin:8px 0;">${t["Case Type"]}</h3>
+        </div>
+        <div class="info-box">📝 <strong>الوصف:</strong> ${t.Description || "لا يوجد وصف مسجل."}</div>
         <div class="card-section">
-          <div class="data-group">👤 ${t["Reporter Name"]} | 📱 ${t["Mobile Number"]}</div>
-          <div class="data-group">🏗️ ${t.Project} | 🛠️ ${t["Res Team"]}</div>
+          <div class="data-group">👤 العميل: ${t["Reporter Name"]} <br> 📱 الهاتف: ${t["Mobile Number"]}</div>
+          <div class="data-group">🏗️ المشروع: ${t.Project} <br> 🛠️ الفريق: ${t["Res Team"]}</div>
         </div>
         <div class="update-status-area">
-          <select id="sel-${t.SN}"><option value="">-- تحديث --</option><option value="Work Completed">Work Completed</option><option value="Canceled">Canceled</option></select>
-          <button class="btn-update-now" onclick="updateStatus('${t.SN}')">تحديث</button>
+          <select id="sel-${t.SN}"><option value="">-- تحديث حالة الطلب --</option><option value="Work Completed">Work Completed</option><option value="Canceled">Canceled</option></select>
+          <button class="btn-update-now" onclick="updateStatus('${t.SN}')">تأكيد التحديث</button>
         </div>
       </div>
     `).join('');
@@ -251,19 +311,24 @@
 
   async function updateStatus(sn) {
     const val = document.getElementById(`sel-${sn}`).value;
-    if(!val) return alert("اختر حالة");
+    if(!val) return alert("الرجاء اختيار حالة جديدة للطلب");
     document.getElementById('update-overlay').style.display = 'flex';
     try {
       const res = await fetch("/.netlify/functions/gsheet", {
         method: "POST",
         body: JSON.stringify({ action: "update", sheet: "Inspire Tickets", sn: sn, column: "Level of Completion", newValue: val })
       });
-      if(res.ok) { alert("تم!"); location.reload(); } else alert("فشل");
-    } catch (e) { alert("خطأ"); } finally { document.getElementById('update-overlay').style.display = 'none'; }
+      if(res.ok) { 
+          alert("تم تحديث حالة الطلب بنجاح!"); 
+          location.reload(); 
+      } else { 
+          alert("فشل في التحديث، يرجى المحاولة مرة أخرى."); 
+      }
+    } catch (e) { alert("حدث خطأ في الاتصال بالخادم."); } finally { document.getElementById('update-overlay').style.display = 'none'; }
   }
 
   function resetAllFilters() {
-    document.querySelectorAll('select, input').forEach(el => el.value = "");
+    document.querySelectorAll('.filter-panel select, .filter-panel input').forEach(el => el.value = "");
     applyFilters();
   }
 
