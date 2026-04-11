@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Advanced Reporting</title>
+  <title>Eltizam - Department Reporting</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -13,33 +13,29 @@
   <style>
     :root { --primary: #2c3e50; --success: #28a745; --danger: #dc3545; --warning: #ffc107; --bg: #f4f7f6; }
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
-    .container { max-width: 1000px; margin: 20px auto; padding: 15px; }
+    .container { max-width: 1100px; margin: 20px auto; padding: 15px; }
     
-    /* إضافات الداشبورد */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    /* الداشبورد المحدث */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
     .stat-card-small { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary); }
-    .stat-card-small h4 { margin: 0; font-size: 11px; color: #7f8c8d; }
+    .stat-card-small h4 { margin: 0; font-size: 11px; color: #7f8c8d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .stat-card-small .val { font-size: 20px; font-weight: bold; color: var(--primary); }
+
     .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px; }
     .chart-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: 260px; }
 
-    /* لوحة التحكم */
     .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
     .filter-group label { font-size: 12px; font-weight: bold; color: var(--primary); }
     
     select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
-    
-    .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .btn-export:hover { background: #d35400; }
+    .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-    /* العداد */
     #loader-container { background: white; padding: 40px; border-radius: 15px; text-align: center; }
     .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 25px; overflow: hidden; position: relative; margin-top: 15px; }
     #progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 1s linear; }
 
-    /* الكروت */
     .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
     .priority-High { border-right-color: var(--danger); }
     .priority-Medium { border-right-color: var(--warning); }
@@ -47,12 +43,10 @@
     
     .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .data-group { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px; border: 1px solid #eee; }
-    
     .info-box { background: #fffcf0; border: 1px solid #f3e5ab; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
     .category-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 
     .update-status-area { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; display: flex; gap: 10px; align-items: center; }
-    .update-status-area select { flex: 1; padding: 8px; font-size: 13px; }
     .btn-update-now { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
     
     #update-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: center; justify-content: center; flex-direction: column; color: white; }
@@ -75,11 +69,13 @@
 
   <div id="dashboardSection" class="dashboard-section" style="display:none;">
     <div class="dashboard-grid">
-      <div class="stat-card-small"><h4>إجمالي المفتوح</h4><div class="val" id="d-total">0</div></div>
-      <div class="stat-card-small" style="border-color:var(--danger)"><h4>عاجل (High)</h4><div class="val" id="d-high">0</div></div>
-      <div class="stat-card-small" style="border-color:var(--warning)"><h4>متوسط (Med)</h4><div class="val" id="d-med">0</div></div>
-      <div class="stat-card-small" style="border-color:var(--success)"><h4>منخفض (Low)</h4><div class="val" id="d-low">0</div></div>
+      <div class="stat-card-small" style="border-color: #2c3e50;">
+        <h4>إجمالي المفتوح</h4>
+        <div class="val" id="d-total">0</div>
+      </div>
+      <div id="dept-stats-container" style="display: contents;"></div>
     </div>
+    
     <div class="charts-row">
       <div class="chart-box"><canvas id="chartMonths"></canvas></div>
       <div class="chart-box"><canvas id="chartProjects"></canvas></div>
@@ -92,9 +88,8 @@
       <div class="filter-group"><label>المشروع</label><select id="fProj" onchange="applyFilters()"><option value="">الكل</option></select></div>
       <div class="filter-group"><label>حالة الطلب</label><select id="fComp" onchange="applyFilters()"><option value="">الكل</option></select></div>
       <div class="filter-group"><label>القسم</label><select id="fTeam" onchange="applyFilters()"><option value="">الكل</option></select></div>
-      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="رقم الوحدة، SN، أو التصنيف..." onkeyup="applyFilters()"></div>
+      <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="رقم الوحدة، SN..." onkeyup="applyFilters()"></div>
     </div>
-    
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <div id="stats" style="flex: 1; font-size: 14px; font-weight: bold; color: var(--primary);"></div>
         <button class="btn-export" onclick="exportToPDF()" id="pdfBtn">📄 استخراج تقرير PDF</button>
@@ -166,12 +161,27 @@
   }
 
   function updateDashboard(data) {
+    // 1. تحديث الإجمالي
     document.getElementById("d-total").textContent = data.length;
-    document.getElementById("d-high").textContent = data.filter(t => t.Priority === "High").length;
-    document.getElementById("d-med").textContent = data.filter(t => t.Priority === "Medium").length;
-    document.getElementById("d-low").textContent = data.filter(t => t.Priority === "Low").length;
 
-    // تحليل الشهور
+    // 2. تحديث عدادات الأقسام (Res Team)
+    const deptContainer = document.getElementById("dept-stats-container");
+    deptContainer.innerHTML = "";
+    const deptCounts = {};
+    data.forEach(t => {
+      const dept = t["Res Team"] || "غير محدد";
+      deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+    });
+
+    Object.keys(deptCounts).forEach(dept => {
+      const card = document.createElement("div");
+      card.className = "stat-card-small";
+      card.style.borderColor = "#3498db";
+      card.innerHTML = `<h4>${dept}</h4><div class="val">${deptCounts[dept]}</div>`;
+      deptContainer.appendChild(card);
+    });
+
+    // 3. الرسوم البيانية
     const mData = {};
     data.forEach(t => {
         const d = new Date(t["Created Date"]);
@@ -182,12 +192,10 @@
     });
     renderChart('chartMonths', 'line', Object.keys(mData), Object.values(mData), 'توزيع الشهور', '#3498db');
 
-    // تحليل المشاريع
     const pData = {};
     data.forEach(t => pData[t.Project] = (pData[t.Project] || 0) + 1);
     renderChart('chartProjects', 'bar', Object.keys(pData), Object.values(pData), 'المشاريع', '#e67e22');
 
-    // تحليل التصنيفات
     const cData = {};
     data.forEach(t => { const c = t.Category || "عام"; cData[c] = (cData[c] || 0) + 1; });
     renderChart('chartCats', 'pie', Object.keys(cData), Object.values(cData), 'التصنيفات');
@@ -244,7 +252,6 @@
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
     if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد بيانات.</p>"; return; }
-    
     list.innerHTML = data.map(t => `
       <div class="ticket-card priority-${t.Priority || 'Low'}">
         <div style="display:flex; justify-content:space-between;">
@@ -269,7 +276,6 @@
   async function updateCompletion(sn) {
     const newVal = document.getElementById(`sel-${sn}`).value;
     if(!newVal) { alert("يرجى اختيار حالة أولاً"); return; }
-    if(!confirm(`هل تريد تأكيد تغيير حالة الطلب ${sn} إلى ${newVal}؟`)) return;
     const overlay = document.getElementById('update-overlay');
     overlay.style.display = 'flex';
     try {
@@ -277,8 +283,8 @@
         method: "POST",
         body: JSON.stringify({ action: "update", sheet: "Inspire Tickets", sn: sn, column: "Level of Completion", newValue: newVal })
       });
-      if(response.ok) { alert("تم التحديث بنجاح!"); location.reload(); }
-      else { alert("فشل التحديث."); }
+      if(response.ok) { alert("تم التحديث!"); location.reload(); }
+      else alert("فشل التحديث.");
     } catch (e) { alert("خطأ."); } finally { overlay.style.display = 'none'; }
   }
 
@@ -288,8 +294,7 @@
     const pdfBtn = document.getElementById('pdfBtn');
     header.style.display = 'block';
     pdfBtn.style.display = 'none';
-    document.getElementById('reportDate').textContent = "تاريخ التقرير: " + new Date().toLocaleString('ar-EG');
-    const opt = { margin: [10, 5, 10, 5], filename: `Eltizam_Report_${new Date().getTime()}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+    const opt = { margin: [10, 5, 10, 5], filename: `Report.pdf`, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).save().then(() => { header.style.display = 'none'; pdfBtn.style.display = 'flex'; });
   }
 </script>
