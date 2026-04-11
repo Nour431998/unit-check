@@ -34,7 +34,6 @@
     .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
     .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
-    /* تكبير خط الـ SN */
     .sn-text { font-size: 16px; font-weight: bold; color: #555; background: #eee; padding: 2px 8px; border-radius: 4px; }
     
     .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
@@ -220,7 +219,8 @@
       return (!p || t.Project === p) && (!c || t["Level of Completion"] === c) && (!tVal || t["Res Team"] === tVal) && (!cat || t.Category === cat) && (!s || comb.includes(s));
     });
     
-    document.getElementById("d-total").textContent = filtered.length;
+    // الحل هنا: استدعاء updateDashboard بدلاً من تحديث الأرقام فقط لضمان تفاعل الرسم البياني
+    updateDashboard(filtered); 
     renderCards(filtered);
     document.getElementById("stats").textContent = `النتائج: ${filtered.length}`;
   }
