@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Smooth Analytics</title>
+  <title>Eltizam - Live Sync</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -15,6 +15,7 @@
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
     .container { max-width: 1100px; margin: 20px auto; padding: 15px; }
     
+    /* الستايsections والمربعات */
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
     .stat-card-small { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary); transition: transform 0.2s; cursor: pointer; }
     .stat-card-small:hover { transform: translateY(-3px); }
@@ -26,39 +27,49 @@
     .chart-box h5 { margin: 0 0 10px 0; font-size: 14px; text-align: center; color: var(--primary); }
 
     .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; transition: all 0.4s ease; border: 2px solid transparent; }
-    .filter-active { border: 2px solid #3498db; background: #f4fbff; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2); }
+    .filter-active { border: 2px solid #3498db; background: #f4fbff; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
-    .filter-group label { font-size: 12px; font-weight: bold; color: var(--primary); }
     
-    select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; background: white; transition: border 0.3s; }
-    select:focus, input:focus { border-color: #3498db; }
+    select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; background: white; }
     .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; transition: transform 0.2s; }
-    .ticket-card:hover { transform: scale(1.01); }
+    /* أنيميشن المزامنة المتطور */
+    #loader-container { background: white; padding: 50px; text-align: center; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; margin: 50px auto; }
+    .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 15px; overflow: hidden; position: relative; margin-top: 20px; }
     
+    #progress-bar { 
+        width: 0%; 
+        height: 100%; 
+        background: linear-gradient(90deg, #28a745, #5cd87d, #28a745); 
+        background-size: 200% 100%;
+        border-radius: 20px; 
+        transition: width 0.4s ease;
+        animation: shimmer 1.5s infinite linear; /* تأثير الحركة المستمرة داخل الشريط */
+    }
+
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .sync-text { font-size: 18px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
+    .sync-sub { font-size: 12px; color: #888; animation: pulse 1.5s infinite; }
+
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    /* الكروت */
+    .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
     .sn-text { font-size: 16px; font-weight: bold; color: #333; background: #eee; padding: 3px 10px; border-radius: 5px; }
-    
     .card-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .data-group { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px; border: 1px solid #eee; }
     .info-box { background: #fffcf0; border: 1px solid #f3e5ab; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
     
-    .update-status-area { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; display: flex; gap: 10px; align-items: center; }
-    .btn-update-now { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
-    
     #update-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: center; justify-content: center; flex-direction: column; color: white; backdrop-filter: blur(2px); }
-    #loader-container { background: white; padding: 40px; text-align: center; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 25px; overflow: hidden; position: relative; margin-top: 15px; }
-    #progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 0.5s ease; }
 
-    /* تحديث مهم لضبط الطباعة ومنع ظهور الأوراق بيضاء */
     @media print { 
-        body { background: white !important; }
-        .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .filter-panel, .btn-export, button, .update-status-area, .dashboard-section, #update-overlay, #loader-container { display: none !important; } 
-        .ticket-card { border: 1px solid #ddd !important; box-shadow: none !important; page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 15px !important; }
-        #reportHeader { display: block !important; }
+        .filter-panel, .btn-export, button, .update-status-area, .dashboard-section, #loader-container { display: none !important; } 
+        .ticket-card { border: 1px solid #ddd !important; page-break-inside: avoid !important; }
     }
   </style>
 </head>
@@ -66,11 +77,19 @@
 
 <div id="update-overlay">
     <div style="border: 4px solid #f3f3f3; border-top: 4px solid #e67e22; border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
-    <span style="font-weight: bold; font-size: 16px;">جاري تحديث الحالة...</span>
+    <span>جاري التحديث...</span>
 </div>
 
 <div class="container">
-  <button onclick="location.href='index.html'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold;">⬅️ القائمة الرئيسية</button>
+  <button onclick="location.href='index.html'" id="backBtn" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px;">⬅️ القائمة الرئيسية</button>
+
+  <div id="loader-container">
+    <span class="sync-text">جاري مزامنة بيانات "التزام"</span>
+    <span class="sync-sub" id="sync-status">يرجى الانتظار، يتم الآن جلب آخر التحديثات...</span>
+    <div class="progress-wrapper">
+        <div id="progress-bar"></div>
+    </div>
+  </div>
 
   <div id="dashboardSection" style="display:none;">
     <div class="dashboard-grid">
@@ -80,7 +99,6 @@
       </div>
       <div id="dept-stats-container" style="display: contents;"></div>
     </div>
-    
     <div class="charts-row">
       <div class="chart-box"><h5>الطلبات شهرياً</h5><canvas id="chartMonths"></canvas></div>
       <div class="chart-box"><h5>الطلبات حسب المشروع</h5><canvas id="chartProjects"></canvas></div>
@@ -97,21 +115,16 @@
       <div class="filter-group"><label>بحث عام</label><input type="text" id="fSearch" placeholder="رقم الوحدة، SN..." onkeyup="applyFilters()"></div>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
-        <div id="stats" style="flex: 1; font-weight: bold; color: #3498db; font-size: 15px;"></div>
-        <button onclick="resetAllFilters()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold;">إعادة ضبط 🔄</button>
-        <button class="btn-export" onclick="exportToPDF()" id="pdfBtn" style="width: auto; padding: 10px 20px;">📄 تقرير PDF</button>
+        <div id="stats" style="flex: 1; font-weight: bold; color: #3498db;"></div>
+        <button onclick="resetAllFilters()">ضبط 🔄</button>
+        <button class="btn-export" onclick="exportToPDF()">📄 PDF</button>
     </div>
-  </div>
-
-  <div id="loader-container">
-    <div style="font-weight:bold; font-size: 16px; color: var(--primary);">جاري مزامنة بيانات "التزام"...</div>
-    <div class="progress-wrapper"><div id="progress-bar"></div></div>
   </div>
 
   <div id="reportArea">
       <div id="reportHeader" style="display:none; text-align:center; border-bottom:4px solid #2c3e50; padding-bottom:15px; margin-bottom: 20px;">
-          <h1 style="margin: 0;">تقرير طلبات الصيانة المفتوحة</h1>
-          <p id="reportDate" style="color: #555;"></p>
+          <h1>تقرير طلبات الصيانة المفتوحة</h1>
+          <p id="reportDate"></p>
       </div>
       <div id="ticketsList"></div>
   </div>
@@ -135,20 +148,41 @@
 
   async function fetchEltizamData() {
     const pb = document.getElementById("progress-bar");
+    const statusText = document.getElementById("sync-status");
+    
+    // أنيميشن البداية (وهمي لزيادة التفاعل)
+    let progress = 0;
+    const interval = setInterval(() => {
+        if(progress < 85) {
+            progress += Math.random() * 5;
+            pb.style.width = progress + "%";
+            if(progress > 40) statusText.textContent = "يتم تحليل البيانات المستلمة...";
+            if(progress > 70) statusText.textContent = "جاري بناء الرسوم البيانية...";
+        }
+    }, 200);
+
     try {
       const res = await fetch("/.netlify/functions/gsheet?sheet=Inspire Tickets&all=1");
       const json = await res.json();
-      pb.style.width = "100%";
+      
+      clearInterval(interval);
+      pb.style.width = "100%"; // اكتمال التحميل
+      statusText.textContent = "اكتملت المزامنة بنجاح!";
+
       setTimeout(() => {
         originalData = json.data.filter(t => t.Status !== "Completed" && t.SN);
         setupFilters(originalData);
         updateDashboard(originalData); 
         renderCards(originalData);
+        
         document.getElementById("loader-container").style.display = "none";
         document.getElementById("dashboardSection").style.display = "block";
         document.getElementById("filterPanel").style.display = "block";
-      }, 500);
-    } catch (e) { alert("حدث خطأ أثناء جلب البيانات، يرجى تحديث الصفحة."); }
+      }, 600);
+    } catch (e) { 
+        statusText.textContent = "عذراً، فشل الاتصال بالسيرفر.";
+        statusText.style.color = "red";
+    }
   }
 
   function updateDashboard(data) {
@@ -161,8 +195,8 @@
       const card = document.createElement("div");
       card.className = "stat-card-small";
       card.onclick = () => { 
-          const teamEl = document.getElementById("fTeam");
-          teamEl.value = (teamEl.value === d) ? "" : d;
+          const el = document.getElementById("fTeam");
+          el.value = (el.value === d) ? "" : d;
           applyFilters(); 
       };
       card.innerHTML = `<h4>${d}</h4><div class="val">${counts[d]}</div>`;
@@ -178,10 +212,8 @@
       }
     });
     const sm = Object.keys(mData).sort();
-    
     const pData = {};
     data.forEach(t => pData[t.Project] = (pData[t.Project] || 0) + 1);
-    
     const cData = {};
     data.forEach(t => { const c = t.Category || "عام"; cData[c] = (cData[c] || 0) + 1; });
 
@@ -201,7 +233,7 @@
             data: { labels: labels, datasets: [{ label: title, data: values, backgroundColor: type === 'pie' ? ['#2ecc71', '#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#1abc9c'] : color, borderColor: color, tension: 0.3, fill: type === 'line' }] },
             options: { 
               maintainAspectRatio: false,
-              animation: { duration: 600, easing: 'easeOutQuart' }, 
+              animation: { duration: 600 },
               onClick: (e, el) => { if(el.length > 0) handleChartClick(fKey, charts[id].data.labels[el[0].index]); },
               plugins: { legend: { display: type === 'pie' } },
               scales: type !== 'pie' ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } } : {}
@@ -211,16 +243,11 @@
   }
 
   function handleChartClick(k, v) {
-    let targetElement;
-    if(k === 'project') targetElement = document.getElementById("fProj");
-    if(k === 'category') targetElement = document.getElementById("fCat");
-    if(k === 'date') targetElement = document.getElementById("fSearch");
-
-    if(targetElement) targetElement.value = (targetElement.value === v) ? "" : v;
-
-    const panel = document.getElementById("filterPanel");
-    panel.classList.add("filter-active");
-    setTimeout(() => panel.classList.remove("filter-active"), 600);
+    let target;
+    if(k === 'project') target = document.getElementById("fProj");
+    if(k === 'category') target = document.getElementById("fCat");
+    if(k === 'date') target = document.getElementById("fSearch");
+    if(target) target.value = (target.value === v) ? "" : v;
     applyFilters();
   }
 
@@ -242,19 +269,18 @@
     const s = document.getElementById("fSearch").value.toLowerCase();
 
     const filtered = originalData.filter(t => {
-      const comb = `${t.SN} ${t["Unit Number"]} ${t.Category} ${t.Description} ${t["Created Date"]}`.toLowerCase();
+      const comb = `${t.SN} ${t["Unit Number"]} ${t.Category} ${t.Description}`.toLowerCase();
       return (!p || t.Project === p) && (!c || t["Level of Completion"] === c) && (!tVal || t["Res Team"] === tVal) && (!cat || t.Category === cat) && (!s || comb.includes(s));
     });
     
     updateDashboard(filtered); 
     renderCards(filtered);
-    document.getElementById("stats").innerHTML = `النتائج المتاحة: <span style="background:#e3f2fd; padding:3px 8px; border-radius:5px;">${filtered.length} طلب</span>`;
+    document.getElementById("stats").innerHTML = `المعروض: ${filtered.length}`;
   }
 
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
-    if(!data.length) { list.innerHTML = "<p style='text-align:center; padding:30px; font-weight:bold; color:#777;'>لا يوجد نتائج مطابقة لهذه الفلاتر.</p>"; return; }
-    
+    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا يوجد نتائج.</p>"; return; }
     list.innerHTML = data.map(t => `
       <div class="ticket-card" style="border-right: 8px solid ${t.Priority === 'High' ? '#dc3545' : t.Priority === 'Medium' ? '#ffc107' : '#28a745'}">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -262,36 +288,16 @@
           <span class="sn-text">SN: ${t.SN}</span>
         </div>
         <div style="margin: 8px 0; font-size: 13px; color: #666;">
-            📅 ${t["Created Date"]} | نسبة الإنجاز: <span style="color:green; font-weight:bold;">${t["Level of Completion"] || "0%"}</span>
+            📅 ${t["Created Date"]} | الحالة: <span style="color:green; font-weight:bold;">${t["Level of Completion"] || "0%"}</span>
         </div>
-        <div style="margin-top:10px;">
-            <span style="background:#e3f2fd; color:#1565c0; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:12px;">${t.Category || "عام"}</span>
-            <h3 style="color:#d35400; margin:8px 0;">${t["Case Type"]}</h3>
-        </div>
-        <div class="info-box">📝 <strong>الوصف:</strong> ${t.Description || "لا يوجد وصف مسجل."}</div>
+        <h3 style="color:#d35400; margin:10px 0;">${t["Case Type"]}</h3>
+        <div class="info-box">${t.Description || "لا يوجد وصف."}</div>
         <div class="card-section">
-          <div class="data-group">👤 العميل: ${t["Reporter Name"]} <br> 📱 الهاتف: ${t["Mobile Number"]}</div>
-          <div class="data-group">🏗️ المشروع: ${t.Project} <br> 🛠️ الفريق: ${t["Res Team"]}</div>
-        </div>
-        <div class="update-status-area">
-          <select id="sel-${t.SN}"><option value="">-- تحديث حالة الطلب --</option><option value="Work Completed">Work Completed</option><option value="Canceled">Canceled</option></select>
-          <button class="btn-update-now" onclick="updateStatus('${t.SN}')">تأكيد التحديث</button>
+          <div class="data-group">👤 ${t["Reporter Name"]} | 📱 ${t["Mobile Number"]}</div>
+          <div class="data-group">🏗️ ${t.Project} | 🛠️ ${t["Res Team"]}</div>
         </div>
       </div>
     `).join('');
-  }
-
-  async function updateStatus(sn) {
-    const val = document.getElementById(`sel-${sn}`).value;
-    if(!val) return alert("الرجاء اختيار حالة جديدة للطلب");
-    document.getElementById('update-overlay').style.display = 'flex';
-    try {
-      const res = await fetch("/.netlify/functions/gsheet", {
-        method: "POST",
-        body: JSON.stringify({ action: "update", sheet: "Inspire Tickets", sn: sn, column: "Level of Completion", newValue: val })
-      });
-      if(res.ok) { alert("تم تحديث حالة الطلب بنجاح!"); location.reload(); } else alert("فشل في التحديث، يرجى المحاولة مرة أخرى."); 
-    } catch (e) { alert("حدث خطأ في الاتصال بالخادم."); } finally { document.getElementById('update-overlay').style.display = 'none'; }
   }
 
   function resetAllFilters() {
@@ -299,32 +305,13 @@
     applyFilters();
   }
 
-  // التحديث الخاص بحل مشكلة الأوراق البيضاء
   function exportToPDF() {
     const el = document.getElementById('reportArea');
     const header = document.getElementById('reportHeader');
-    
-    // إظهار الهيدر للطباعة
     header.style.display = 'block';
     document.getElementById('reportDate').textContent = "بتاريخ: " + new Date().toLocaleString('ar-EG');
-
-    // إعدادات محسنة لتجنب الصفحات الفارغة وقص الكروت
-    const opt = {
-      margin:       [10, 10, 10, 10], 
-      filename:     'Eltizam_Report.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { 
-          scale: 2, 
-          scrollY: 0, // الأهم: يقرأ الصفحة من البداية دائماً حتى لو نزلت لأسفل
-          useCORS: true 
-      },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'] } // يحافظ على الكروت من التقطيع المنتصف
-    };
-
-    html2pdf().set(opt).from(el).save().then(() => {
-        header.style.display = 'none'; // إخفاء الهيدر بعد الانتهاء
-    });
+    const opt = { margin: 10, filename: 'Eltizam_Report.pdf', html2canvas: { scale: 2, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4' }, pagebreak: { mode: ['css', 'legacy'] } };
+    html2pdf().set(opt).from(el).save().then(() => header.style.display = 'none');
   }
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
