@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Eltizam - Department Reporting</title>
+  <title>Eltizam - Professional Analytics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -15,15 +15,16 @@
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
     .container { max-width: 1100px; margin: 20px auto; padding: 15px; }
     
-    /* الداشبورد المحدث */
+    /* الداشبورد */
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
     .stat-card-small { background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary); }
-    .stat-card-small h4 { margin: 0; font-size: 11px; color: #7f8c8d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stat-card-small h4 { margin: 0; font-size: 11px; color: #7f8c8d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .stat-card-small .val { font-size: 20px; font-weight: bold; color: var(--primary); }
 
     .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px; }
     .chart-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: 260px; }
 
+    /* الفلاتر */
     .filter-panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; position: sticky; top: 10px; z-index: 1000; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
@@ -32,10 +33,12 @@
     select, input { padding: 10px; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
     .btn-export { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
+    /* التحميل */
     #loader-container { background: white; padding: 40px; border-radius: 15px; text-align: center; }
     .progress-wrapper { width: 100%; background: #eee; border-radius: 20px; height: 25px; overflow: hidden; position: relative; margin-top: 15px; }
     #progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 1s linear; }
 
+    /* كروت الطلبات */
     .ticket-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border-right: 8px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); page-break-inside: avoid; }
     .priority-High { border-right-color: var(--danger); }
     .priority-Medium { border-right-color: var(--warning); }
@@ -161,10 +164,10 @@
   }
 
   function updateDashboard(data) {
-    // 1. تحديث الإجمالي
+    // 1. الإجمالي
     document.getElementById("d-total").textContent = data.length;
 
-    // 2. تحديث عدادات الأقسام (Res Team)
+    // 2. عدادات الأقسام
     const deptContainer = document.getElementById("dept-stats-container");
     deptContainer.innerHTML = "";
     const deptCounts = {};
@@ -173,7 +176,7 @@
       deptCounts[dept] = (deptCounts[dept] || 0) + 1;
     });
 
-    Object.keys(deptCounts).forEach(dept => {
+    Object.keys(deptCounts).sort().forEach(dept => {
       const card = document.createElement("div");
       card.className = "stat-card-small";
       card.style.borderColor = "#3498db";
@@ -181,21 +184,25 @@
       deptContainer.appendChild(card);
     });
 
-    // 3. الرسوم البيانية
+    // 3. تحليل الشهور (ترتيب زمني)
     const mData = {};
     data.forEach(t => {
         const d = new Date(t["Created Date"]);
         if(!isNaN(d)) {
-            const key = `${d.getFullYear()}-${d.getMonth()+1}`;
-            mData[key] = (mData[key] || 0) + 1;
+            const sortKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+            mData[sortKey] = (mData[sortKey] || 0) + 1;
         }
     });
-    renderChart('chartMonths', 'line', Object.keys(mData), Object.values(mData), 'توزيع الشهور', '#3498db');
+    const sortedMonths = Object.keys(mData).sort();
+    const sortedValues = sortedMonths.map(m => mData[m]);
+    renderChart('chartMonths', 'line', sortedMonths, sortedValues, 'الطلبات شهرياً', '#3498db');
 
+    // 4. تحليل المشاريع
     const pData = {};
     data.forEach(t => pData[t.Project] = (pData[t.Project] || 0) + 1);
-    renderChart('chartProjects', 'bar', Object.keys(pData), Object.values(pData), 'المشاريع', '#e67e22');
+    renderChart('chartProjects', 'bar', Object.keys(pData), Object.values(pData), 'حسب المشروع', '#e67e22');
 
+    // 5. تحليل التصنيفات
     const cData = {};
     data.forEach(t => { const c = t.Category || "عام"; cData[c] = (cData[c] || 0) + 1; });
     renderChart('chartCats', 'pie', Object.keys(cData), Object.values(cData), 'التصنيفات');
@@ -212,10 +219,15 @@
                 data: values,
                 backgroundColor: type === 'pie' ? ['#2ecc71', '#e74c3c', '#3498db', '#f1c40f', '#9b59b6'] : color,
                 borderColor: color,
-                tension: 0.3
+                tension: 0.3,
+                fill: type === 'line'
             }]
         },
-        options: { maintainAspectRatio: false, plugins: { legend: { display: type === 'pie' } } }
+        options: { 
+          maintainAspectRatio: false, 
+          plugins: { legend: { display: type === 'pie' } },
+          scales: type !== 'pie' ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } } : {}
+        }
     });
   }
 
@@ -251,7 +263,7 @@
 
   function renderCards(data) {
     const list = document.getElementById("ticketsList");
-    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد بيانات.</p>"; return; }
+    if(!data.length) { list.innerHTML = "<p style='text-align:center;'>لا توجد بيانات مطابقة.</p>"; return; }
     list.innerHTML = data.map(t => `
       <div class="ticket-card priority-${t.Priority || 'Low'}">
         <div style="display:flex; justify-content:space-between;">
@@ -259,15 +271,15 @@
           <span style="font-weight:bold; color:green;">${t["Level of Completion"] || "0%"}</span>
         </div>
         <div style="margin: 5px 0; font-size: 11px; color: #888;">SN: ${t.SN} | ${t["Created Date"]}</div>
-        <div style="margin-top:10px;"><span class="category-badge">تصنيف: ${t.Category || "عام"}</span><h3 style="color:#d35400; margin:5px 0;">${t["Case Type"]}</h3></div>
-        <div class="info-box"><strong>📝 الوصف:</strong> ${t.Description || "لا يوجد وصف مسجل."}</div>
+        <div style="margin-top:10px;"><span class="category-badge">${t.Category || "عام"}</span><h3 style="color:#d35400; margin:5px 0;">${t["Case Type"]}</h3></div>
+        <div class="info-box"><strong>📝 الوصف:</strong> ${t.Description || "لا يوجد وصف."}</div>
         <div class="card-section">
           <div class="data-group"><strong>العميل:</strong> ${t["Reporter Name"]}<br><strong>الهاتف:</strong> ${t["Mobile Number"]}</div>
           <div class="data-group"><strong>المشروع:</strong> ${t.Project}<br><strong>الفريق:</strong> ${t["Res Team"]}</div>
         </div>
         <div class="update-status-area">
-          <select id="sel-${t.SN}"><option value="">-- تحديث الحالة --</option><option value="Work Completed">Work Completed</option><option value="Canceled">Canceled</option></select>
-          <button class="btn-update-now" onclick="updateCompletion('${t.SN}')">تحديث الحالة</button>
+          <select id="sel-${t.SN}"><option value="">-- تحديث --</option><option value="Work Completed">Work Completed</option><option value="Canceled">Canceled</option></select>
+          <button class="btn-update-now" onclick="updateCompletion('${t.SN}')">تحديث</button>
         </div>
       </div>
     `).join('');
@@ -275,7 +287,7 @@
 
   async function updateCompletion(sn) {
     const newVal = document.getElementById(`sel-${sn}`).value;
-    if(!newVal) { alert("يرجى اختيار حالة أولاً"); return; }
+    if(!newVal) { alert("اختر حالة"); return; }
     const overlay = document.getElementById('update-overlay');
     overlay.style.display = 'flex';
     try {
@@ -283,9 +295,9 @@
         method: "POST",
         body: JSON.stringify({ action: "update", sheet: "Inspire Tickets", sn: sn, column: "Level of Completion", newValue: newVal })
       });
-      if(response.ok) { alert("تم التحديث!"); location.reload(); }
-      else alert("فشل التحديث.");
-    } catch (e) { alert("خطأ."); } finally { overlay.style.display = 'none'; }
+      if(response.ok) { alert("تم التحديث بنجاح!"); location.reload(); }
+      else alert("خطأ في التحديث.");
+    } catch (e) { alert("فشل الاتصال."); } finally { overlay.style.display = 'none'; }
   }
 
   function exportToPDF() {
@@ -294,7 +306,8 @@
     const pdfBtn = document.getElementById('pdfBtn');
     header.style.display = 'block';
     pdfBtn.style.display = 'none';
-    const opt = { margin: [10, 5, 10, 5], filename: `Report.pdf`, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+    document.getElementById('reportDate').textContent = "بتاريخ: " + new Date().toLocaleString('ar-EG');
+    const opt = { margin: [10, 5, 10, 5], filename: `Eltizam_Report.pdf`, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).save().then(() => { header.style.display = 'none'; pdfBtn.style.display = 'flex'; });
   }
 </script>
